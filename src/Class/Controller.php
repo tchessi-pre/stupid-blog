@@ -86,9 +86,7 @@ class Controller
 
         if ($user && password_verify($password, $user->getPassword())) {
             $user->setPassword('');
-            $_SESSION['user'] = [
-                $user
-            ];
+            $_SESSION['user'] = $user;
 
             $this->redirect('home');
 
@@ -111,8 +109,30 @@ class Controller
     {
         if (isset($_SESSION['user'])) {
             return $_SESSION['user'];
+            var_dump($_SESSION['user']);
         } else {
             return null;
         }
+    }
+
+    public function profile()
+    {
+        $user = new User();
+        if (self::getUser() === null) {
+            $this->redirect('login');
+
+            return;
+        }
+        $user = $user->findOneById($_SESSION['user']->getId());
+        if ($user) {
+            $user->setPassword('');
+            $this->render('profile', ['user' => $user]);
+
+            return;
+        }
+
+        $this->redirect('login');
+
+        return;
     }
 }

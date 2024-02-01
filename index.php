@@ -5,6 +5,9 @@ use App\Router\Router;
 
 require_once 'vendor/autoload.php';
 
+session_start();
+
+
 $router = new Router($_SERVER['REQUEST_URI']);
 
 $router->setBasePath('/stupid-blog/');
@@ -13,20 +16,6 @@ $router->get('/', function () {
     $controller = new Controller();
     $controller->render('index');
 }, "home");
-
-$router->get('/login', function () {
-    $controller = new Controller();
-    $controller->render('login');
-}, "login");
-
-$router->post('/login', function () {
-    try {
-        $controller = new Controller();
-        $controller->loginUser($_POST['email'], $_POST['password']);
-    } catch (\Exception $e) {
-        $controller->render('login', ['error' => $e->getMessage()]);
-    }
-}, "login");
 
 $router->get('/register', function () {
     try {
@@ -46,4 +35,34 @@ $router->post('/register', function () {
         $controller->render('register', ['error' => $e->getMessage()]);
     }
 }, "register");
+
+$router->get('/login', function () {
+    $controller = new Controller();
+    $controller->render('login');
+}, "login");
+
+$router->post('/login', function () {
+    try {
+        $controller = new Controller();
+        $controller->loginUser($_POST['email'], $_POST['password']);
+    } catch (\Exception $e) {
+        $controller->render('login', ['error' => $e->getMessage()]);
+    }
+}, "login");
+
+$router->get('/logout', function () {
+    $controller = new Controller();
+    $controller->logoutUser();
+}, "logout");
+
+$router->get('/profile', function () {
+    $controller = new Controller();
+    $controller->profile();
+}, "profile");
+
+$router->get('/posts', function () {
+    $controller = new Controller();
+    $controller->render('posts');
+}, "posts");
+
 $router->run();
