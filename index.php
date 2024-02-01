@@ -60,9 +60,15 @@ $router->get('/profile', function () {
     $controller->profile();
 }, "profile");
 
-$router->get('/posts', function () {
+$router->get('/posts/:page', function ($page = 1) {
     $controller = new Controller();
-    $controller->render('posts');
-}, "posts");
+    $controller->paginatedPosts($page);
+}, "posts")->with('page', '[0-9]+');
+
+$router->get('/post/:id', function ($id) {
+    $controller = new Controller();
+    $controller->viewPost($id);
+}, "post")->with('id', '[0-9]+');
+
 
 $router->run();

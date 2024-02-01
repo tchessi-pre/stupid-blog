@@ -135,4 +135,12 @@ class Controller
 
         return;
     }
+
+    public function paginatedPosts($page)
+    {
+        $post = new Post();
+        $posts = $post->findAllPaginated($page);
+        $pages = count($post->findAll()) / 10;
+        $this->render('posts', ['posts' => $posts, 'pages' => $pages]);
+    }
 }
