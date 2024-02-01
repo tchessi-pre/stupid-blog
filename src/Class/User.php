@@ -280,7 +280,7 @@ class User
         $connection = Database::getConnection();
         $query = $connection->prepare('INSERT INTO user (email, password, firstname, lastname, role) VALUES (:email, :password, :firstname, :lastname, :role)');
         $query->bindValue(':email', $this->email, \PDO::PARAM_STR);
-        $query->bindValue(':password', password_hash($this->password, PASSWORD_DEFAULT), \PDO::PARAM_STR);
+        $query->bindValue(':password', $this->password, \PDO::PARAM_STR);
         $query->bindValue(':firstname', $this->firstname, \PDO::PARAM_STR);
         $query->bindValue(':lastname', $this->lastname, \PDO::PARAM_STR);
         $query->bindValue(':role', json_encode($this->role), \PDO::PARAM_STR);
@@ -299,5 +299,25 @@ class User
         $query->bindValue(':lastname', $this->lastname, \PDO::PARAM_STR);
         $query->bindValue(':role', json_encode($this->role), \PDO::PARAM_STR);
         $query->execute();
+    }
+
+    public function findOneByEmail(string $email)
+    {
+        $connection = Database::getConnection();
+        $query = $connection->prepare('SELECT * FROM user WHERE email = :email');
+        $query->bindValue(':email', $email, \PDO::PARAM_STR);
+        $query->execute();
+        $user = $query->fetch(\PDO::FETCH_ASSOC);
+        if ($user) {
+            $this->id = $user['id'];
+            $this->email = $user['email'];
+            $this->password = $user['password'];
+            $this->firstname = $user['firstname'];
+            $this->lastname = $user['lastname'];
+            $this->role = json_decode($user['role'], true);
+            return $this;
+        } else {
+            return false;
+        }
     }
 }
