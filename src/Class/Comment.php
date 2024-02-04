@@ -142,6 +142,24 @@ class Comment
         return $comments;
     }
 
+    public function findByUser(int $id)
+    {
+        $pdo = Database::getConnection();
+        $query = $pdo->prepare('SELECT * FROM comment WHERE user_id = :id');
+        $query->execute([
+            'id' => $id
+        ]);
+        $comments = [];
+        foreach ($query->fetchAll() as $comment) {
+            $comments[] = (new Comment())
+                ->setId($comment['id'])
+                ->setContent($comment['content'])
+                ->setCreatedAt($comment['created_at'])
+                ->setPost((new Post())->findOneById($comment['post_id']));
+        }
+        return $comments;
+    }
+
     public function save()
     {
         if (is_null($this->id)) {

@@ -37,6 +37,7 @@ use App\Router\Router;
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
+        <button type="submit">Modifier</button>
     </form>
 
 </body>

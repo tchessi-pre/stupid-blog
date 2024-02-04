@@ -207,7 +207,7 @@ class User
     {
         if (empty($this->comments)) {
             $commentModel = new Comment();
-            $this->comments = $commentModel->findByUser($this->id);
+            $this->comments = $commentModel->findByUser($this->id); 
         }
         return $this->comments;
     }

@@ -1,13 +1,23 @@
+<?php
+
+use App\Router\Router;
+
+?>
+
 <body>
+    <nav>
+        <ul>
+            <li><a href="<?= Router::url('admin', ['entity' => 'user', 'action' => 'list']) ?>">Users</a></li>
+            <li><a href="<?= Router::url('admin', ['entity' => 'post', 'action' => 'list']) ?>">Posts</a></li>
+            <li><a href="<?= Router::url('admin', ['entity' => 'comment', 'action' => 'list']) ?>">Comments</a></li>
+            <li><a href="<?= Router::url('admin', ['entity' => 'category', 'action' => 'list']) ?>">Categories</a></li>
+        </ul>
+    </nav>
     <h1><?= $entityName ?> list</h1>
     <table>
         <thead>
             <tr>
-                <?php
-
-                use App\Router\Router;
-
-                foreach ($entities[0] as $key => $value) : ?>
+                <?php foreach ($entities[0] as $key => $value) : ?>
                     <th><?= $key ?></th>
                 <?php endforeach; ?>
                 <th>Actions</th>

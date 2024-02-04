@@ -228,10 +228,55 @@ class Controller
         $className = "App\\Class\\$entity";
         $class = new $className();
         $instance = $class->findOneById($id);
-        var_dump($instance->toArray());
         $this->render('admin/show', [
             'entity' => $instance,
             'entityName' => $entity
         ]);
+    }
+
+    public function editAdmin($entity, $id)
+    {
+        $entity = ucfirst($entity);
+        $className = "App\\Class\\$entity";
+        $class = new $className();
+        $instance = $class->findOneById($id);
+        foreach ($_POST as $key => $value) {
+            $key = explode('_', $key);
+            $key = array_map(function ($word) {
+                return ucfirst($word);
+            }, $key);
+            $key = implode('', $key);
+            $value = htmlspecialchars($value);
+            $getter = 'get' . $key;
+            if (method_exists($instance, $getter) && is_array($instance->$getter())) {
+                $value = explode(', ', $value);
+            }
+            if (is_string($value) && strtotime($value)) {
+                $value = (new \DateTime())->setTimestamp(strtotime($value));
+            }
+            if ($key === 'User' || $key === 'Post' || $key === 'Comments' || $key === 'Category') {
+                continue;
+            }
+            $setter = 'set' . $key;
+            var_dump([$key, $value]);
+            if (method_exists($instance, $setter) && null !== $instance->$getter()) {
+                $instance->$setter($value);
+            }
+        }
+
+        $instance->save();
+
+        $this->redirect('admin', ['entity' => strtolower($entity), 'action' => 'list']);
+    }
+
+    public function deleteAdmin($entity, $id)
+    {
+        $entity = ucfirst($entity);
+        $className = "App\\Class\\$entity";
+        $class = new $className();
+        $instance = $class->findOneById($id);
+        $instance->delete();
+
+        $this->redirect('admin', ['entity' => strtolower($entity), 'action' => 'list']);
     }
 }
