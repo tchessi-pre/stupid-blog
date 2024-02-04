@@ -70,5 +70,24 @@ $router->get('/post/:id', function ($id) {
     $controller->viewPost($id);
 }, "post")->with('id', '[0-9]+');
 
+$router->post('/comments/:post_id', function ($post_id) {
+    try {
+        $controller = new Controller();
+        $controller->createComment($_POST['content'], $post_id);
+    } catch (\Exception $e) {
+        $controller->viewPost($post_id, ['error' => $e->getMessage()]);
+    }
+}, "add_comment")->with('post_id', '[0-9]+');
+
+$router->get('/admin/:action/:entity', function ($action = 'list', $entity = 'user') {
+    $controller = new Controller();
+    $controller->admin($action, $entity);
+}, "admin")->with('action', 'list|show|edit|delete')->with('entity', 'user|post|comment');
+
+$router->get('/admin/:action/:entity/:id', function ($action = 'list', $entity = 'user', $id = null) {
+    $controller = new Controller();
+    $controller->admin($action, $entity, $id);
+}, "admin-entity")->with('action', 'list|show|edit|delete')->with('entity', 'user|post|comment')->with('id', '[0-9]+');
+
 
 $router->run();

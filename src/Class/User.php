@@ -229,6 +229,22 @@ class User
         return $this;
     }
 
+    public function hasRole(string $role): bool
+    {
+        return in_array($role, $this->role);
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'email' => $this->email,
+            'firstname' => $this->firstname,
+            'lastname' => $this->lastname,
+            'role' => $this->role
+        ];
+    }
+
     public function findOneById(int $id): self
     {
         $connection = Database::getConnection();

@@ -79,6 +79,17 @@ class Comment
         return $this;
     }
 
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'content' => $this->content,
+            'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
+            'user_id' => $this->user->getId(),
+            'post_id' => $this->post->getId()
+        ];
+    }
+
     public function findOneById(int $id): self
     {
         $pdo = Database::getConnection();

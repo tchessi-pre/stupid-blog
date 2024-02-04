@@ -18,7 +18,7 @@ class Controller
         require_once 'src/views/partials/footer.php';
     }
 
-    public function redirect($url, $params = [], $code = 302)
+    public function redirect($url, $params = [], $code = 302, $message = null)
     {
         $url = Router::url($url, $params);
         header("Location: $url", true, $code);
@@ -109,7 +109,6 @@ class Controller
     {
         if (isset($_SESSION['user'])) {
             return $_SESSION['user'];
-            var_dump($_SESSION['user']);
         } else {
             return null;
         }
@@ -142,5 +141,96 @@ class Controller
         $posts = $post->findAllPaginated($page);
         $pages = count($post->findAll()) / 10;
         $this->render('posts', ['posts' => $posts, 'pages' => $pages]);
+    }
+
+    public function viewPost($id, $error = null)
+    {
+        if (is_numeric($id) === false) {
+            throw new \Exception("L'identifiant du post n'est pas valide");
+
+            return;
+        }
+        $post = new Post();
+        $post = $post->findOneById((int) $id);
+        $this->render('post', ['post' => $post, 'error' => $error]);
+    }
+
+    public function createComment($content, $post_id)
+    {
+        if (empty($content)) {
+            throw new \Exception("Le contenu ne peut pas être vide");
+
+            return;
+        }
+
+        if (self::getUser() === null) {
+            throw new \Exception("Vous devez être connecté pour commenter");
+
+            return;
+        }
+
+        if (is_numeric($post_id) === false) {
+            throw new \Exception("L'identifiant du post n'est pas valide");
+
+            return;
+        }
+
+        $post_id = (int) $post_id;
+
+        $post = new Post();
+        $post = $post->findOneById($post_id);
+
+        $comment = new Comment();
+        $comment->setContent($content);
+        $comment->setUser(self::getUser());
+        $comment->setPost($post);
+        $comment->setCreatedAt(new \DateTime());
+        $comment->save();
+
+        $this->redirect('post', ['id' => $post->getId()]);
+    }
+
+    public function admin($action = 'list', $entity = 'user', $id = null)
+    {
+        if (self::getUser() === null || !in_array('ROLE_ADMIN', self::getUser()->getRole())) {
+            $this->redirect('home');
+
+            return;
+        }
+
+        $action = $action . 'Admin';
+
+        if (method_exists($this, $action)) {
+            $this->$action($entity, $id);
+        } else {
+            throw new \Exception("L'action demandée n'existe pas");
+        }
+    }
+
+    public function listAdmin($entity)
+    {
+        $entity = ucfirst($entity);
+        $className = "App\\Class\\$entity";
+        $class = new $className();
+        $entities = $class->findAll();
+        $entities = array_map(function ($instance) {
+            return $instance->toArray();
+        }, $entities);
+        $this->render('admin/list', [
+            'entities' => $entities,
+            'entityName' => $entity
+        ]);
+    }
+
+    public function showAdmin($entity, $id)
+    {
+        $entity = ucfirst($entity);
+        $className = "App\\Class\\$entity";
+        $class = new $className();
+        $entity = $class->findOneById($id);
+        $this->render('admin/show', [
+            'entity' => $entity,
+            'entityName' => $entity
+        ]);
     }
 }

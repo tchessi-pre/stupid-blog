@@ -81,6 +81,15 @@ class Category
         return $this;
     }
 
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'posts' => count($this->posts)
+        ];
+    }
+
     public function findOneById(int $id)
     {
         $pdo = Database::getConnection();
