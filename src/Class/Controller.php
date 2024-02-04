@@ -227,9 +227,10 @@ class Controller
         $entity = ucfirst($entity);
         $className = "App\\Class\\$entity";
         $class = new $className();
-        $entity = $class->findOneById($id);
+        $instance = $class->findOneById($id);
+        var_dump($instance->toArray());
         $this->render('admin/show', [
-            'entity' => $entity,
+            'entity' => $instance,
             'entityName' => $entity
         ]);
     }

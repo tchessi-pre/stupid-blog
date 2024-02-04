@@ -219,8 +219,8 @@ class Post
     {
         return [
             'id' => $this->id,
-            'title' => substr($this->title, 0, 50) . '...',
-            'content' => substr($this->content, 0, 50) . '...',
+            'title' => $this->title,
+            'content' => $this->content,
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
             'updated_at' => $this->updatedAt ? $this->updatedAt->format('Y-m-d H:i:s') : null,
             'user' => $this->user->getEmail(),

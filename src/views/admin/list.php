@@ -27,12 +27,11 @@
                             </td>
                             <?php continue; ?>
                         <?php endif; ?>
-                        <td><?= $value ?></td>
+                        <td><?= (is_string($value) && strlen($value) > 255) ? substr($value, 0, 50) . '...' : $value ?></td>
                     <?php endforeach; ?>
                     <td>
                         <a href="<?= Router::url('admin-entity', ['action' => 'show', 'entity' => strtolower($entityName), 'id' => $entity['id']]) ?>">Show</a>
-                        <a href="/admin/edit/<?= $entity['id'] ?>">Edit</a>
-                        <a href="/admin/delete/<?= $entity['id'] ?>">Delete</a>
+                        <a href="<?= Router::url('admin-entity', ['action' => 'delete', 'entity' => strtolower($entityName), 'id' => $entity['id']]) ?>">Delete</a>
                     </td>
                 </tr>
             <?php endforeach; ?>
