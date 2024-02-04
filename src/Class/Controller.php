@@ -277,6 +277,10 @@ class Controller
         $instance = $class->findOneById($id);
         $instance->delete();
 
+        if ($entity === 'User' && $id === self::getUser()->getId()) {
+            $this->redirect('logout');
+        }
+
         $this->redirect('admin', ['entity' => strtolower($entity), 'action' => 'list']);
     }
 }

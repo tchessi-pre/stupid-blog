@@ -170,4 +170,12 @@ class Category
 
         return $this;
     }
+
+    public function delete()
+    {
+        $pdo = Database::getConnection();
+        $query = $pdo->prepare('DELETE FROM category WHERE id = :id');
+        $query->bindValue(':id', $this->id, \PDO::PARAM_INT);
+        $query->execute();
+    }
 }

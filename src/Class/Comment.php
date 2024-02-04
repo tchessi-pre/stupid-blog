@@ -194,4 +194,12 @@ class Comment
             'id' => $this->id
         ]);
     }
+
+    public function delete()
+    {
+        $pdo = Database::getConnection();
+        $query = $pdo->prepare('DELETE FROM comment WHERE id = :id');
+        $query->bindValue(':id', $this->id, \PDO::PARAM_INT);
+        $query->execute();
+    }
 }

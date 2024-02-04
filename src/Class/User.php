@@ -336,4 +336,12 @@ class User
             return false;
         }
     }
+
+    public function delete()
+    {
+        $connection = Database::getConnection();
+        $query = $connection->prepare('DELETE FROM user WHERE id = :id');
+        $query->bindValue(':id', $this->id, \PDO::PARAM_INT);
+        $query->execute();
+    }
 }
