@@ -1,7 +1,12 @@
 <?php
 
 use App\Class\Controller;
+use App\Controller\CommentController;
+use App\Class\Redirector;
+use App\Repository\CommentRepository;
 use App\Router\Router;
+use App\Service\CommentService;
+use App\View\ViewRenderer;
 
 require_once 'vendor/autoload.php';
 
@@ -70,14 +75,41 @@ $router->get('/post/:id', function ($id) {
     $controller->viewPost($id);
 }, "post")->with('id', '[0-9]+');
 
+
+
+
+
+// $router->post('/comments/:post_id', function ($post_id) {
+//     try {
+//         $controller = new Controller();
+//         $controller->createComment($_POST['content'], $post_id);
+//     } catch (\Exception $e) {
+//         $controller->viewPost($post_id, ['error' => $e->getMessage()]);
+//     }
+// }, "add_comment")->with('post_id', '[0-9]+');
+
 $router->post('/comments/:post_id', function ($post_id) {
+    $db = new PDO('mysql:host=localhost;dbname=solid-blog;charset=utf8', 'root', '', [
+        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        \PDO::ATTR_TIMEOUT => 90
+    ]); 
+    $commentRepository = new CommentRepository($db);
+    $commentService = new CommentService($commentRepository);
+    $viewRenderer = new ViewRenderer; 
+    $redirector = new Redirector;
+    $commentController = new CommentController($commentService, $viewRenderer, $redirector);
+
     try {
-        $controller = new Controller();
-        $controller->createComment($_POST['content'], $post_id);
+        $commentController->create(['post_id' => $post_id, 'content' => $_POST['content']]);
     } catch (\Exception $e) {
-        $controller->viewPost($post_id, ['error' => $e->getMessage()]);
+        $redirector->redirect('post', ['id' => $post_id, 'error' => $e->getMessage()]);
     }
 }, "add_comment")->with('post_id', '[0-9]+');
+
+
+
+
+
 
 $router->get('/admin/:action/:entity', function ($action = 'list', $entity = 'user') {
     $controller = new Controller();
