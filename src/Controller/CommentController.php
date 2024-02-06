@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Service\CommentService;
 use App\Class\Redirector;
-use App\Class\User;
 use App\View\ViewRenderer;
 
 class CommentController

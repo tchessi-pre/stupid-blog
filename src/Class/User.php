@@ -252,6 +252,7 @@ class User
         $query->bindValue(':id', $id, \PDO::PARAM_INT);
         $query->execute();
         $user = $query->fetch(\PDO::FETCH_ASSOC);
+       
         $this->id = $user['id'];
         $this->email = $user['email'];
         $this->password = $user['password'];

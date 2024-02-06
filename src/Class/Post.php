@@ -2,6 +2,7 @@
 
 namespace App\Class;
 
+use App\Repository\CommentRepository;
 use DateTime;
 
 class Post
@@ -252,7 +253,7 @@ class Post
         $this->updatedAt = $arrayPost['updated_at'] ? new DateTime($arrayPost['updated_at']) : null;
         $this->user = (new User())->findOneById($arrayPost['user_id']);
         $this->category = (new Category())->findOneById($arrayPost['category_id']);
-        $this->comments = (new Comment())->findByPost($arrayPost['id']);
+        $this->comments = (new CommentRepository($connection))->findByPost($arrayPost['id']);
         return $this;
     }
 
@@ -272,7 +273,7 @@ class Post
             $post->setUpdatedAt($arrayPost['updated_at'] ? new DateTime($arrayPost['updated_at']) : null);
             $post->setUser((new User())->findOneById($arrayPost['user_id']));
             $post->setCategory((new Category())->findOneById($arrayPost['category_id']));
-            $post->setComments((new Comment())->findByPost($arrayPost['id']));
+            $post->setComments((new CommentRepository($connection))->findByPost($arrayPost['id']));
             $results[] = $post;
         }
         return $results;
@@ -313,6 +314,7 @@ class Post
     public function findByUser(User $user)
     {
         $sql = 'SELECT * FROM post WHERE user_id = :user_id';
+        $connection = Database::getConnection();
         $stmt = Database::getConnection()->prepare($sql);
         $stmt->bindValue(':user_id', $user->getId(), \PDO::PARAM_INT);
         $stmt->execute();
@@ -327,7 +329,7 @@ class Post
             $post->setUpdatedAt($arrayPost['updated_at'] ?? new DateTime($arrayPost['updated_at']));
             $post->setUser((new User())->findOneById($arrayPost['user_id']));
             $post->setCategory((new Category())->findOneById($arrayPost['category_id']));
-            $post->setComments((new Comment())->findByPost($arrayPost['id']));
+            $post->setComments((new CommentRepository($connection))->findByPost($arrayPost['id']));
             $results[] = $post;
         }
         return $results;
@@ -338,6 +340,7 @@ class Post
         $limit = 10;
         $offset = ($page - 1) * $limit;
         $sql = 'SELECT * FROM post ORDER BY created_at DESC LIMIT :limit OFFSET :offset';
+        $connection = Database::getConnection();
         $stmt = Database::getConnection()->prepare($sql);
         $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
@@ -353,7 +356,7 @@ class Post
             $post->setUpdatedAt($arrayPost['updated_at'] ? new DateTime($arrayPost['updated_at']) : null);
             $post->setUser((new User())->findOneById($arrayPost['user_id']));
             $post->setCategory((new Category())->findOneById($arrayPost['category_id']));
-            $post->setComments((new Comment())->findByPost($arrayPost['id']));
+            $post->setComments((new CommentRepository($connection))->findByPost($arrayPost['id']));
             $results[] = $post;
         }
         return $results;
