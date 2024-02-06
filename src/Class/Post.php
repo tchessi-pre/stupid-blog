@@ -2,7 +2,9 @@
 
 namespace App\Class;
 
+use App\Model\CategoryModel;
 use App\Model\CommentModel;
+use App\Repository\CategoryRepository;
 use App\Repository\CommentRepository;
 use DateTime;
 
@@ -17,7 +19,7 @@ class Post
         private ?DateTime $updatedAt = null,
         private ?User $user = null,
         private ?array $comments = [],
-        private ?Category $category = null,
+        private ?CategoryModel $category = null,
     ) {
     }
 
@@ -205,12 +207,12 @@ class Post
         return $this;
     }
 
-    public function getCategory(): ?Category
+    public function getCategory(): ?CategoryModel
     {
         return $this->category;
     }
 
-    public function setCategory(Category $category): self
+    public function setCategory(CategoryModel $category): self
     {
         $this->category = $category;
 
@@ -253,7 +255,7 @@ class Post
         $this->createdAt = new DateTime($arrayPost['created_at']);
         $this->updatedAt = $arrayPost['updated_at'] ? new DateTime($arrayPost['updated_at']) : null;
         $this->user = (new User())->findOneById($arrayPost['user_id']);
-        $this->category = (new Category())->findOneById($arrayPost['category_id']);
+        $this->category = (new CategoryRepository($connection))->findOneById($arrayPost['category_id']);
         $this->comments = (new CommentRepository($connection))->findByPost($arrayPost['id']);
         return $this;
     }
@@ -273,7 +275,7 @@ class Post
             $post->setCreatedAt(new DateTime($arrayPost['created_at']));
             $post->setUpdatedAt($arrayPost['updated_at'] ? new DateTime($arrayPost['updated_at']) : null);
             $post->setUser((new User())->findOneById($arrayPost['user_id']));
-            $post->setCategory((new Category())->findOneById($arrayPost['category_id']));
+            $post->setCategory((new CategoryRepository($connection))->findOneById($arrayPost['category_id']));
             $post->setComments((new CommentRepository($connection))->findByPost($arrayPost['id']));
             $results[] = $post;
         }
@@ -329,7 +331,7 @@ class Post
             $post->setCreatedAt(new DateTime($arrayPost['created_at']));
             $post->setUpdatedAt($arrayPost['updated_at'] ?? new DateTime($arrayPost['updated_at']));
             $post->setUser((new User())->findOneById($arrayPost['user_id']));
-            $post->setCategory((new Category())->findOneById($arrayPost['category_id']));
+            $post->setCategory((new CategoryRepository($connection))->findOneById($arrayPost['category_id']));
             $post->setComments((new CommentRepository($connection))->findByPost($arrayPost['id']));
             $results[] = $post;
         }
@@ -356,7 +358,7 @@ class Post
             $post->setCreatedAt(new DateTime($arrayPost['created_at']));
             $post->setUpdatedAt($arrayPost['updated_at'] ? new DateTime($arrayPost['updated_at']) : null);
             $post->setUser((new User())->findOneById($arrayPost['user_id']));
-            $post->setCategory((new Category())->findOneById($arrayPost['category_id']));
+            $post->setCategory((new CategoryRepository($connection))->findOneById($arrayPost['category_id']));
             $post->setComments((new CommentRepository($connection))->findByPost($arrayPost['id']));
             $results[] = $post;
         }
