@@ -8,6 +8,7 @@ use App\Model\CommentModel;
 use App\Class\User;
 use App\Class\Post;
 use DateTime;
+use App\Class\Database;
 
 class CommentRepository
 {
@@ -20,6 +21,18 @@ class CommentRepository
 
     public function save($comment)
     {
+        $comment = new CommentModel();
+        if (null === $comment->getId()) {
+            $this->insert();
+        } else {
+            $this->update();
+        }
+    }
+
+    private function insert()
+    {
+        $comment = new CommentModel();
+        $connection = Database::getConnection();
         $stmt = $this->db->prepare("INSERT INTO comment (content, user_id, post_id, created_at) VALUES (:content, :user_id, :post_id, :created_at)");
         $stmt->execute([
             'content' => $comment->getContent(),
@@ -27,6 +40,22 @@ class CommentRepository
             'post_id' => $comment->getPostId(),
             'created_at' => $comment->getCreatedAt()->format('Y-m-d H:i:s')
         ]);
+        $comment->setId($connection->lastInsertId());
+    
+    }
+
+    private function update()
+    {
+        $comment = new CommentModel();
+        $connection = Database::getConnection();
+        $stmt = $this->db->prepare("INSERT INTO comment (content, user_id, post_id, created_at) VALUES (:content, :user_id, :post_id, :created_at)");
+        $stmt->execute([
+            'content' => $comment->getContent(),
+            'user_id' => $comment->getUserId(),
+            'post_id' => $comment->getPostId(),
+            'created_at' => $comment->getCreatedAt()->format('Y-m-d H:i:s')
+        ]);
+        $comment->setId($connection->lastInsertId());
     }
 
     public function toArray($comment): array
