@@ -13,7 +13,7 @@ class PostModel
   private $updatedAt;
   private $userId;
   private $comments;
-  private $category;
+  private $categoryId;
 
   public function __construct()
   {
@@ -114,14 +114,14 @@ class PostModel
     return $this;
   }
 
-  public function getCategory()
+  public function getCategoryId()
   {
-    return $this->category;
+    return $this->categoryId;
   }
 
-  public function setCategory($category)
+  public function setCategoryId($categoryId)
   {
-    $this->category = $category;
+    $this->categoryId = $categoryId;
 
     return $this;
   }

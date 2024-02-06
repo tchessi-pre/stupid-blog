@@ -3,8 +3,9 @@
 namespace App\Repository;
 
 use PDO;
-use App\Model\AppModel;
+use App\Model\PostModel;
 use App\Class\User;
+use App\Repository\CommentRepository;
 use DateTime;
 
 class PostRepository
@@ -16,86 +17,103 @@ class PostRepository
     $this->db = $db;
   }
 
-  public function save($post)
+  public function save()
   {
-    if (empty($this->id)) {
-      $connection = Database::getConnection();
-      $query = $connection->prepare('INSERT INTO post (title, content, user_id, category_id, created_at) VALUES (:title, :content, :user_id, :category_id, NOW())');
-      $query->bindValue(':title', $this->title, \PDO::PARAM_STR);
-      $query->bindValue(':content', $this->content, \PDO::PARAM_STR);
-      $query->bindValue(':user_id', $this->user->getId(), \PDO::PARAM_INT);
-      $query->bindValue(':category_id', $this->category->getId(), \PDO::PARAM_INT);
-      $query->execute();
-      $this->id = $connection->lastInsertId();
+    $post = new PostModel();
+    if (empty($post->getId())) {
+      $this->insert();
     } else {
-      $connection = Database::getConnection();
-        $query = $connection->prepare('UPDATE post SET title = :title, content = :content, user_id = :user_id, category_id = :category_id, updated_at = NOW() WHERE id = :id');
-        $query->bindValue(':id', $this->id, \PDO::PARAM_INT);
-        $query->bindValue(':title', $this->title, \PDO::PARAM_STR);
-        $query->bindValue(':content', $this->content, \PDO::PARAM_STR);
-        $query->bindValue(':user_id', $this->user->getId(), \PDO::PARAM_INT);
-        $query->bindValue(':category_id', $this->category->getId(), \PDO::PARAM_INT);
-        $query->execute();
+      $this->update();
     }
   }
 
-  public function delete()
+  public function insert()
   {
-    $connection = Database::getConnection();
-    $query = $connection->prepare('DELETE FROM post WHERE id = :id');
-    $query->bindValue(':id', $this->id, \PDO::PARAM_INT);
-    $query->execute();
+    $post = new PostModel();
+    $stmt = $this->db->prepare('INSERT INTO post (title, content, user_id, category_id, created_at) VALUES (:title, :content, :user_id, :category_id, NOW())');
+    $stmt->bindValue(':title', $post->getTitle(), \PDO::PARAM_STR);
+    $stmt->bindValue(':content', $post->getContent(), \PDO::PARAM_STR);
+    $stmt->bindValue(':user_id', $post->getUserId(), \PDO::PARAM_INT);
+    $stmt->bindValue(':category_id', $post->getCategoryId(), \PDO::PARAM_INT);
+    $stmt->execute();
+    $post->setId($this->db->lastInsertId());
   }
 
-  public function toArray()
+  public function update()
+  {
+    $post = new PostModel();
+    $stmt = $this->db->prepare('UPDATE post SET title = :title, content = :content, user_id = :user_id, category_id = :category_id, updated_at = NOW() WHERE id = :id');
+    $stmt->bindValue(':id', $post->getId(), \PDO::PARAM_INT);
+    $stmt->bindValue(':title', $post->getTitle(), \PDO::PARAM_STR);
+    $stmt->bindValue(':content', $post->getContent(), \PDO::PARAM_STR);
+    $stmt->bindValue(':user_id', $post->getUserId(), \PDO::PARAM_INT);
+    $stmt->bindValue(':category_id', $post->getCategoryId(), \PDO::PARAM_INT);
+    $stmt->execute();
+  }
+
+  public function delete($postId)
+  {
+    $stmt = $this->db->prepare('DELETE FROM post WHERE id = :id');
+    $stmt->bindValue(':id', $postId, \PDO::PARAM_INT);
+    $stmt->execute();
+  }
+
+  public function toArray($post): array
   {
     return [
-      'id' => $this->id,
-      'title' => $this->title,
-      'content' => $this->content,
-      'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
-      'updated_at' => $this->updatedAt ? $this->updatedAt->format('Y-m-d H:i:s') : null,
-      'user' => $this->user->getEmail(),
-      'comments' => array_map(fn ($comment) => $comment->getId(), $this->comments),
-      'category' => $this->category->getName()
+      'id' => $post->getId(),
+      'title' => $post->getTitle(),
+      'content' => $post->getContent(),
+      'created_at' => $post->getCreatedAt()->format('Y-m-d H:i:s'),
+      'updated_at' => $post->getUpdatedAt() ? $post->getUpdatedAt()->format('Y-m-d H:i:s') : null,
+      'user' => $post->user->getEmail(),
+      'comments' => array_map(fn ($comment) => $comment->getId(), $post->comments),
+      'category' => $post->category->getName()
     ];
   }
 
   public function findOneById($id)
   {
-    $connection = Database::getConnection();
-    $query = $connection->prepare('SELECT * FROM post WHERE id = :id');
-    $query->bindValue(':id', $id, \PDO::PARAM_INT);
-    $query->execute();
-    $arrayPost = $query->fetch(\PDO::FETCH_ASSOC);
-    $this->id = $arrayPost['id'];
-    $this->title = $arrayPost['title'];
-    $this->content = $arrayPost['content'];
-    $this->createdAt = new DateTime($arrayPost['created_at']);
-    $this->updatedAt = $arrayPost['updated_at'] ? new DateTime($arrayPost['updated_at']) : null;
-    $this->user = (new User())->findOneById($arrayPost['user_id']);
-    $this->category = (new Category())->findOneById($arrayPost['category_id']);
-    $this->comments = (new CommentRepository($connection))->findByPost($arrayPost['id']);
-    return $this;
+    $stmt = $this->db->prepare('SELECT * FROM post WHERE id = :id');
+    $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
+    $stmt->execute();
+
+    $arrayPost = $stmt->fetch(\PDO::FETCH_ASSOC);
+    if (!$arrayPost) {
+      return null;
+    }
+
+    $post = new PostModel();
+    $commentRepository = new CommentRepository($this->db);
+    $post->setId($arrayPost['id']);
+    $post->setTitle($arrayPost['title']);
+    $post->setContent($arrayPost['content']);
+    $post->setCreatedAt(new DateTime($arrayPost['created_at']));
+    $post->setUpdatedAt($arrayPost['updated_at'] ? new DateTime($arrayPost['updated_at']) : null);
+    $post->setUserId($arrayPost['user_id']);
+    $post->setCategoryId($arrayPost['category_id']);
+    $post->setComments($commentRepository->findByPost($arrayPost['id']));
+    return $post;
   }
 
   public function findAll()
   {
-    $connection = Database::getConnection();
-    $query = $connection->prepare('SELECT * FROM post');
-    $query->execute();
-    $arrayPosts = $query->fetchAll(\PDO::FETCH_ASSOC);
+    $stmt = $this->db->prepare('SELECT * FROM post');
+    $stmt->execute();
+
+    $arrayPosts = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    $commentRepository = new CommentRepository(($this->db));
     $results = [];
     foreach ($arrayPosts as $arrayPost) {
-        $post = new Post();
+        $post = new PostModel();
         $post->setId($arrayPost['id']);
         $post->setTitle($arrayPost['title']);
         $post->setContent($arrayPost['content']);
         $post->setCreatedAt(new DateTime($arrayPost['created_at']));
         $post->setUpdatedAt($arrayPost['updated_at'] ? new DateTime($arrayPost['updated_at']) : null);
-        $post->setUser((new User())->findOneById($arrayPost['user_id']));
-        $post->setCategory((new Category())->findOneById($arrayPost['category_id']));
-        $post->setComments((new CommentRepository($connection))->findByPost($arrayPost['id']));
+        $post->setUserId($arrayPost['user_id']);
+        $post->setCategoryId($arrayPost['category_id']);
+        $post->setComments($commentRepository->findByPost($arrayPost['id']));
         $results[] = $post;
     }
     return $results;
@@ -103,23 +121,23 @@ class PostRepository
 
   public function findByUser($user)
   {
-    $sql = 'SELECT * FROM post WHERE user_id = :user_id';
-    $connection = Database::getConnection();
-    $stmt = Database::getConnection()->prepare($sql);
+    $stmt = $this->db->prepare('SELECT * FROM post WHERE user_id = :user_id');
     $stmt->bindValue(':user_id', $user->getId(), \PDO::PARAM_INT);
     $stmt->execute();
+
     $results = [];
+    $commentRepository = new CommentRepository(($this->db));
     $arrayPost = $stmt->fetchAll(\PDO::FETCH_ASSOC);
     foreach ($arrayPost as $arrayPost) {
-        $post = new Post();
+        $post = new PostModel();
         $post->setId($arrayPost['id']);
         $post->setTitle($arrayPost['title']);
         $post->setContent($arrayPost['content']);
         $post->setCreatedAt(new DateTime($arrayPost['created_at']));
         $post->setUpdatedAt($arrayPost['updated_at'] ?? new DateTime($arrayPost['updated_at']));
-        $post->setUser((new User())->findOneById($arrayPost['user_id']));
-        $post->setCategory((new Category())->findOneById($arrayPost['category_id']));
-        $post->setComments((new CommentRepository($connection))->findByPost($arrayPost['id']));
+        $post->setUserId($arrayPost['user_id']);
+        $post->setCategoryId($arrayPost['category_id']);
+        $post->setComments($commentRepository->findByPost($arrayPost['id']));
         $results[] = $post;
     }
     return $results;
@@ -129,24 +147,25 @@ class PostRepository
   {
     $limit = 10;
     $offset = ($page - 1) * $limit;
-    $sql = 'SELECT * FROM post ORDER BY created_at DESC LIMIT :limit OFFSET :offset';
-    $connection = Database::getConnection();
-    $stmt = Database::getConnection()->prepare($sql);
+
+    $stmt = $this->db->prepare('SELECT * FROM post ORDER BY created_at DESC LIMIT :limit OFFSET :offset');
     $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
     $stmt->execute();
+
     $results = [];
+    $commentRepository = new CommentRepository(($this->db));
     $arrayPost = $stmt->fetchAll(\PDO::FETCH_ASSOC);
     foreach ($arrayPost as $arrayPost) {
-        $post = new Post();
+        $post = new PostModel();
         $post->setId($arrayPost['id']);
         $post->setTitle($arrayPost['title']);
         $post->setContent($arrayPost['content']);
         $post->setCreatedAt(new DateTime($arrayPost['created_at']));
         $post->setUpdatedAt($arrayPost['updated_at'] ? new DateTime($arrayPost['updated_at']) : null);
-        $post->setUser((new User())->findOneById($arrayPost['user_id']));
-        $post->setCategory((new Category())->findOneById($arrayPost['category_id']));
-        $post->setComments((new CommentRepository($connection))->findByPost($arrayPost['id']));
+        $post->setUserId($arrayPost['user_id']);
+        $post->setCategoryId($arrayPost['category_id']);
+        $post->setComments($commentRepository->findByPost($arrayPost['id']));
         $results[] = $post;
     }
     return $results;
