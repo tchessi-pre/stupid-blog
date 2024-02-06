@@ -11,7 +11,7 @@ class PostModel
   private $content;
   private $createdAt;
   private $updatedAt;
-  private $user;
+  private $userId;
   private $comments;
   private $category;
 
@@ -61,7 +61,7 @@ class PostModel
 
   public function getUpdatedAt()
   {
-    return $this->updatedAt = $updatedAt;
+    return $this->updatedAt;
   }
 
   public function setUpdatedAt($updatedAt)
@@ -96,7 +96,7 @@ class PostModel
 
   public function addComment(CommentModel $comment)
   {
-    if (!in_array($commebt, $this->comments) && $comment->getPostId() === $this->id) {
+    if (!in_array($comment, $this->comments) && $comment->getPostId() === $this->id) {
       $this->comments[] = $comment;
     }
     $this->comments[] = $comment;
