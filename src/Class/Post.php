@@ -2,6 +2,7 @@
 
 namespace App\Class;
 
+use App\Model\CommentModel;
 use App\Repository\CommentRepository;
 use DateTime;
 
@@ -178,15 +179,15 @@ class Post
     {
         $this->comments = $comments;
         foreach ($comments as $comment) {
-            $comment->setPost($this);
+            $comment->setPostId($this->getId());
         }
 
         return $this;
     }
 
-    public function addComment(Comment $comment): self
+    public function addComment(CommentModel $comment): self
     {
-        if (!in_array($comment, $this->comments) && $comment->getPost()->getId() === $this->id) {
+        if (!in_array($comment, $this->comments) && $comment->getPostId() === $this->id) {
             $this->comments[] = $comment;
         }
         $this->comments[] = $comment;
@@ -194,7 +195,7 @@ class Post
         return $this;
     }
 
-    public function removeComment(Comment $comment): self
+    public function removeComment(CommentModel $comment): self
     {
         $key = array_search($comment, $this->comments);
         if ($key !== false) {

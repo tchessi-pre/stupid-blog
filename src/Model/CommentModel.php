@@ -1,5 +1,93 @@
 <?php
 
+// namespace App\Model;
+
+// use DateTime;
+// use App\Class\User;
+// use App\Class\Post;
+
+// class CommentModel
+// {
+
+//     public function __construct(
+//         private ?int $id = null,
+//         private ?string $content = null,
+//         private ?DateTime $createdAt = null,
+//         private ?User $user = null,
+//         private ?Post $post = null
+//     ) {
+//     }
+
+//     public function getId(): ?int
+//     {
+//         return $this->id;
+//     }
+
+//     public function setId(int $id): CommentModel
+//     {
+//         $this->id = $id;
+
+//         return $this;
+//     }
+
+//     public function getContent(): ?string
+//     {
+//         return $this->content;
+//     }
+
+//     public function setContent(string $content): CommentModel
+//     {
+//         $this->content = $content;
+
+//         return $this;
+//     }
+
+//     public function getCreatedAt(): ?DateTime
+//     {
+//         return $this->createdAt;
+//     }
+
+//     public function setCreatedAt(DateTime|string $createdAt): CommentModel
+//     {
+//         if (is_string($createdAt)) {
+//             $createdAt = new DateTime($createdAt);
+//         }
+//         $this->createdAt = $createdAt;
+
+//         return $this;
+//     }
+
+//     public function getUser(): ?User
+//     {
+//         return $this->user;
+//     }
+
+//     public function setUser(User $user): CommentModel
+//     {
+//         $this->user = $user;
+
+//         return $this;
+//     }
+
+//     public function getPost(): ?Post
+//     {
+//         return $this->post;
+//     }
+
+//     public function setPost(Post $post): CommentModel
+//     {
+//         $this->post = $post;
+
+//         return $this;
+//     }
+
+// }
+
+
+
+
+// <?php
+
 namespace App\Model;
 
 class CommentModel

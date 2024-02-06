@@ -3,7 +3,8 @@
 namespace App\Repository;
 
 use PDO;
-use App\Class\Comment;
+use App\Model\CommentModel;
+// use App\Class\Comment;
 use App\Class\User;
 use App\Class\Post;
 use DateTime;
@@ -40,7 +41,7 @@ class CommentRepository
     }
 
 
-    public function findOneById(int $commentId): ?Comment
+    public function findOneById(int $commentId): ?CommentModel
     {
         $stmt = $this->db->prepare('SELECT * FROM comment WHERE id = :id');
         $stmt->execute(['id' => $commentId]);
@@ -50,13 +51,13 @@ class CommentRepository
             return null;
         }
     
-        $comment = new Comment();
+        $comment = new CommentModel();
         $comment->setId($commentData['id']);
         $comment->setContent($commentData['content']);
         $comment->setCreatedAt(new DateTime($commentData['created_at']));
     
-        $comment->setUser((new User())->findOneById($commentData['user_id']));
-        $comment->setPost((new Post())->findOneById($commentData['post_id']));
+        $comment->setUserId($commentData['user_id']);
+        $comment->setPostId($commentData['post_id']);
     
         return $comment;
     }
@@ -70,13 +71,13 @@ class CommentRepository
 
     $comments = [];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $commentData) {
-        $comment = new Comment();
-        $comment->setId($commentData['id'])
-                ->setContent($commentData['content'])
-                ->setCreatedAt(new DateTime($commentData['created_at']));
+        $comment = new CommentModel();
+        $comment->setId($commentData['id']);
+        $comment->setContent($commentData['content']);
+        $comment->setCreatedAt(new DateTime($commentData['created_at']));
 
-        $comment->setUser((new User())->findOneById($commentData['user_id']));
-        $comment->setPost((new Post())->findOneById($commentData['post_id']));
+        $comment->setUserId($commentData['user_id']);
+        $comment->setPostId($commentData['post_id']);
 
         $comments[] = $comment;
     }
@@ -94,12 +95,12 @@ class CommentRepository
 
     $comments = [];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $commentData) {
-        $comment = new Comment();
-        $comment->setId($commentData['id'])
-                ->setContent($commentData['content'])
-                ->setCreatedAt(new DateTime($commentData['created_at']));
+        $comment = new CommentModel();
+        $comment->setId($commentData['id']);
+        $comment->setContent($commentData['content']);
+        $comment->setCreatedAt(new DateTime($commentData['created_at']));
 
-        $comment->setUser((new User())->findOneById($commentData['user_id']));
+        $comment->setUserId($commentData['user_id']);
 
         $comments[] = $comment;
     }
@@ -116,12 +117,12 @@ class CommentRepository
 
     $comments = [];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $commentData) {
-        $comment = new Comment();
-        $comment->setId($commentData['id'])
-                ->setContent($commentData['content'])
-                ->setCreatedAt(new DateTime($commentData['created_at']));
+        $comment = new CommentModel();
+        $comment->setId($commentData['id']);
+        $comment->setContent($commentData['content']);
+        $comment->setCreatedAt(new DateTime($commentData['created_at']));
 
-        $comment->setPost((new Post())->findOneById($commentData['post_id']));
+        $comment->setPostId($commentData['post_id']);
 
         $comments[] = $comment;
     }

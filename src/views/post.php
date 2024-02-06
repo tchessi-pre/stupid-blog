@@ -3,6 +3,7 @@
 use App\Class\Controller;
 use App\Class\Post;
 use App\Router\Router;
+use App\Class\User;
 
 /** @var Post $post */
 $post;
@@ -18,8 +19,9 @@ $post;
     <div>
         <h2>Commentaires</h2>
         <?php foreach ($post->getComments() as $comment) : ?>
+        <?php $user = new User($comment->getUserId()) ?>
             <p><?= $comment->getContent() ?></p>
-            <p><?= $comment->getUser()->getFirstname() ?> <?= $comment->getUser()->getLastname() ?></p>
+            <p><?= $user->getFirstname() ?> <?= $user->getLastname() ?></p>
             <p><?= $comment->getCreatedAt()->format('d/m/Y') ?></p>
         <?php endforeach; ?>
         <?php if (Controller::getUser()) : ?>
