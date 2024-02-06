@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Service\PostService;
+use App\Class\Database;
+use App\Repository\PostRepository;
 use App\Class\Redirector;
 use App\View\ViewRenderer;
 
@@ -37,5 +39,31 @@ class PostController
     } catch (\Exception $e) {
       $this->redirector->redirect('posts', ['1', 'error' => $e->getMessage()]);
     }
+  }
+
+  public function paginatedPosts($page)
+  {
+    $viewRenderer = new ViewRenderer;
+    $db = new Database();
+    $connection = $db->getConnection();
+    $post = new PostRepository($connection);
+    $posts = $post->findAllPaginated($page);
+    $pages = count($post->findAll()) / 10;
+    $viewRenderer->render('posts', ['posts' => $posts, 'pages' => $pages]);
+  }
+
+  public function viewPost($id, $error = null)
+  {
+    if (is_numeric($id) === false) {
+        throw new \Exception("L'identifiant du post n'est pas valide");
+
+        return;
+    }
+    $viewRenderer = new ViewRenderer;
+    $db = new Database();
+    $connection = $db->getConnection();
+    $post = new PostRepository($connection);
+    $post = $post->findOneById((int) $id);
+    $viewRenderer->render('post', ['post' => $post, 'error' => $error]);
   }
 }

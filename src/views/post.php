@@ -1,19 +1,22 @@
 <?php
 
 use App\Class\Controller;
-use App\Class\Post;
+use App\Model\PostModel;
 use App\Router\Router;
 use App\Class\User;
+use App\Model\CategoryModel;
 
-/** @var Post $post */
+/** @var PostModel $post */
 $post;
 
 ?>
 
 <body>
     <h1><?= $post->getTitle() ?></h1>
-    <p>Écrit par : <?= $post->getUser()->getFirstname() ?> <?= $post->getUser()->getLastname() ?></p>
-    <p>Catégorie : <?= $post->getCategory()->getName() ?></p>
+    <?php $userPost = new User($post->getUserId()) ?>
+    <p>Écrit par : <?= $userPost->getFirstname() ?> <?= $userPost->getLastname() ?></p>
+    <?php $category = new CategoryModel($post->getCategoryId()) ?>
+    <p>Catégorie : <?= $category->getName() ?></p>
     <p><?= $post->getContent() ?></p>
     <p><?= $post->getCreatedAt()->format('d/m/Y') ?></p>
     <div>

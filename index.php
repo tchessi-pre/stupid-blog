@@ -1,11 +1,15 @@
 <?php
 
 use App\Class\Controller;
+use App\Class\Database;
 use App\Controller\CommentController;
+use App\Controller\PostController;
 use App\Class\Redirector;
 use App\Repository\CommentRepository;
+use App\Repository\PostRepository;
 use App\Router\Router;
 use App\Service\CommentService;
+use App\Service\PostService;
 use App\View\ViewRenderer;
 
 require_once 'vendor/autoload.php';
@@ -66,12 +70,24 @@ $router->get('/profile', function () {
 }, "profile");
 
 $router->get('/posts/:page', function ($page = 1) {
-    $controller = new Controller();
+    $db = new Database();
+    $connection = $db->getConnection();
+    $postRepository = new PostRepository($connection);
+    $postService = new PostService($postRepository);
+    $viewRenderer = new ViewRenderer;
+    $redirector = new Redirector;
+    $controller = new PostController($postService, $viewRenderer, $redirector);
     $controller->paginatedPosts($page);
 }, "posts")->with('page', '[0-9]+');
 
 $router->get('/post/:id', function ($id) {
-    $controller = new Controller();
+    $db = new Database();
+    $connection = $db->getConnection();
+    $postRepository = new PostRepository($connection);
+    $postService = new PostService($postRepository);
+    $viewRenderer = new ViewRenderer;
+    $redirector = new Redirector;
+    $controller = new PostController($postService, $viewRenderer, $redirector);
     $controller->viewPost($id);
 }, "post")->with('id', '[0-9]+');
 

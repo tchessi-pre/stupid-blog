@@ -2,6 +2,7 @@
 
 namespace App\Class;
 
+use App\Repository\PostRepository;
 use App\Router\Router;
 
 class Controller
@@ -135,25 +136,29 @@ class Controller
         return;
     }
 
-    public function paginatedPosts($page)
-    {
-        $post = new Post();
-        $posts = $post->findAllPaginated($page);
-        $pages = count($post->findAll()) / 10;
-        $this->render('posts', ['posts' => $posts, 'pages' => $pages]);
-    }
+    // public function paginatedPosts($page)
+    // {
+    //     $db = new Database();
+    //     $connection = $db->getConnection();
+    //     $post = new PostRepository($connection);
+    //     $posts = $post->findAllPaginated($page);
+    //     $pages = count($post->findAll()) / 10;
+    //     $this->render('posts', ['posts' => $posts, 'pages' => $pages]);
+    // }
 
-    public function viewPost($id, $error = null)
-    {
-        if (is_numeric($id) === false) {
-            throw new \Exception("L'identifiant du post n'est pas valide");
+    // public function viewPost($id, $error = null)
+    // {
+    //     if (is_numeric($id) === false) {
+    //         throw new \Exception("L'identifiant du post n'est pas valide");
 
-            return;
-        }
-        $post = new Post();
-        $post = $post->findOneById((int) $id);
-        $this->render('post', ['post' => $post, 'error' => $error]);
-    }
+    //         return;
+    //     }
+    //     $db = new Database();
+    //     $connection = $db->getConnection();
+    //     $post = new PostRepository($connection);
+    //     $post = $post->findOneById((int) $id);
+    //     $this->render('post', ['post' => $post, 'error' => $error]);
+    // }
 
 
     public function admin($action = 'list', $entity = 'user', $id = null)
