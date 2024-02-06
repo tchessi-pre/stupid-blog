@@ -16,6 +16,8 @@ class PostModel
   private $category;
 
   public function __construct()
+  {
+  }
 
   public function getId()
   {
