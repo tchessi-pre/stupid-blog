@@ -46,7 +46,7 @@ class PostModel
 
   public function setContent($content)
   {
-    $this->context = $content;
+    $this->content = $content;
   }
 
   public function getCreatedAt()
@@ -61,7 +61,7 @@ class PostModel
 
   public function getUpdatedAt()
   {
-    return $this->updatedAt = $updatedAt
+    return $this->updatedAt = $updatedAt;
   }
 
   public function setUpdatedAt($updatedAt)
@@ -116,7 +116,7 @@ class PostModel
 
   public function getCategory()
   {
-    return $this->category
+    return $this->category;
   }
 
   public function setCategory($category)
