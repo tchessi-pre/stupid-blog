@@ -37,6 +37,11 @@ class UserRepository implements RepositoryInterface
         return $user;
     }
 
+    public function getUserById(int $id): ?UserModel
+    {
+      return $this->findOneById($id);
+    }
+
     public function findAll(): array
     {
         $stmt = $this->db->prepare('SELECT * FROM user');
