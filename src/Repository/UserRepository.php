@@ -5,10 +5,6 @@ namespace App\Repository;
 use App\Class\Database;
 use PDO;
 use App\Model\UserModel;
-use DateTime;
-use App\Controller\UserController;
-use App\Class\Redirector;
-use App\View\ViewRenderer;
 
 class UserRepository
 {
@@ -67,7 +63,6 @@ class UserRepository
         $stmt->execute();
         $user = $stmt->fetch(\PDO::FETCH_ASSOC);
         $userModel = new UserModel();
-        // var_dump($user); die;
         if ($user) {
             $userModel->setId($user['id']);
             $userModel->setEmail ($user['email']);

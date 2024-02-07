@@ -4,12 +4,17 @@ use App\Class\Controller;
 use App\Model\PostModel;
 use App\Router\Router;
 use App\Class\User;
+use App\Controller\CategoryController;
 use App\Model\CategoryModel;
 use App\Model\UserModel;
 use App\Controller\UserController;
+use App\Repository\CategoryRepository;
+use App\Service\CategoryService;
+use App\Class\Database;
 
 /** @var PostModel $post */
 $post;
+
 
 ?>
 
@@ -17,7 +22,12 @@ $post;
     <h1><?= $post->getTitle() ?></h1>
     <?php $userPost = new UserModel($post->getUserId()) ?>
     <p>Écrit par : <?= $userPost->getFirstname() ?> <?= $userPost->getLastname() ?></p>
-    <?php $category = new CategoryModel($post->getCategoryId()) ?>
+    <?php 
+    $db = new Database();
+    $connection = $db->getConnection();
+    $categoryRepository = new CategoryRepository($connection);
+    $categoryService = new CategoryService($categoryRepository);
+    $category = $categoryService->getCategoryById($post->getCategoryId()); ?>
     <p>Catégorie : <?= $category->getName() ?></p>
     <p><?= $post->getContent() ?></p>
     <p><?= $post->getCreatedAt()->format('d/m/Y') ?></p>
