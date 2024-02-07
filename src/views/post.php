@@ -11,6 +11,8 @@ use App\Controller\UserController;
 use App\Repository\CategoryRepository;
 use App\Service\CategoryService;
 use App\Class\Database;
+use App\Repository\UserRepository;
+use App\Service\UserService;
 
 /** @var PostModel $post */
 $post;
@@ -20,14 +22,13 @@ $connection = $db->getConnection();
 $categoryRepository = new CategoryRepository($connection);
 $categoryService = new CategoryService($categoryRepository);
 $category = $categoryService->getCategoryById($post->getCategoryId());
-
-
+$userRepository = new UserRepository($connection);
+$user = $userRepository->getUserById($post->getUserId());
 ?>
 
 <body>
     <h1><?= $post->getTitle() ?></h1>
-    <?php $userPost = new PostModel($post->getUserId()); var_dump($userPost)?>
-    <p>Écrit par : </p>
+    <p>Écrit par : <?= $user->getFirstName() ?> <?= $user->getLastName() ?></p> 
     <p>Catégorie : <?= $category->getName() ?></p>
     <p><?= $post->getContent() ?></p>
     <p><?= $post->getCreatedAt()->format('d/m/Y') ?></p>
