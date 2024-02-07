@@ -5,8 +5,9 @@ namespace App\Controller;
 use App\Service\CommentService;
 use App\Class\Redirector;
 use App\View\ViewRenderer;
+use App\Interface\ControllerInterface;
 
-class CommentController
+class CommentController implements ControllerInterface
 {
     private $commentService;
     private $viewRenderer;
@@ -21,13 +22,10 @@ class CommentController
 
     public function create($request)
     {
-        // var_dump($_SESSION);die;
         $postId = $request['post_id'] ?? null;
         $content = $request['content'] ?? '';
         $userId = $_SESSION['user']->getId();
-        // var_dump($content);
-        // die;
-        
+
         if (is_null($postId) || is_null($userId) || empty($content)) {
             $this->redirector->redirect('post', ['id' => $postId, 'error' => 'Commentaire invalide']);
             return;
@@ -41,5 +39,40 @@ class CommentController
         }
     }
 
+    public function update($request)
+    {
+        $commentId = $request['comment_id'] ?? null;
+        $content = $request['content'] ?? '';
+        $postId = $request['post_id'] ?? null;
 
+        if (is_null($commentId) || is_null($postId) || empty($content)) {
+            $this->redirector->redirect('post', ['id' => $postId, 'error' => 'Données de commentaire non valides']);
+            return;
+        }
+
+        try {
+            $this->commentService->updateComment($commentId, $content);
+            $this->redirector->redirect('post', ['id' => $postId, 'success' => 'Commentaire mis à jour avec succès']);
+        } catch (\Exception $e) {
+            $this->redirector->redirect('post', ['id' => $postId, 'error' => $e->getMessage()]);
+        }
+    }
+
+    public function delete($request)
+    {
+        $commentId = $request['comment_id'] ?? null;
+        $postId = $request['post_id'] ?? null;
+
+        if (is_null($commentId) || is_null($postId)) {
+            $this->redirector->redirect('post', ['id' => $postId, 'error' => 'ID de commentaire invalide']);
+            return;
+        }
+
+        try {
+            $this->commentService->deleteComment($commentId);
+            $this->redirector->redirect('post', ['id' => $postId, 'success' => 'Commentaire supprimé avec succès']);
+        } catch (\Exception $e) {
+            $this->redirector->redirect('post', ['id' => $postId, 'error' => $e->getMessage()]);
+        }
+    }
 }

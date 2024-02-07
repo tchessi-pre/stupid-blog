@@ -7,8 +7,9 @@ use App\Class\Database;
 use App\Repository\PostRepository;
 use App\Class\Redirector;
 use App\View\ViewRenderer;
+use App\Interface\ControllerInterface;
 
-class PostController
+class PostController implements ControllerInterface
 {
   private $postService;
   private $viewRenderer;
@@ -41,6 +42,38 @@ class PostController
     }
   }
 
+  public function update($request)
+  {
+    $postId = $request['id'] ?? null;
+    $categoryId = $request['category'] ?? null;
+    $content = $request['content'] ?? '';
+    $title = $request['title'] ?? '';
+    $userId = $_SESSION['user']->getId();
+
+    if (is_null($postId) || is_null($categoryId) || is_null($userId) || empty($content) || empty($title)) {
+      $this->redirector->redirect('posts', ['1', 'error' => 'Données de publication invalides']);
+      return;
+    }
+    try {
+    } catch (\Exception $e) {
+      $this->redirector->redirect('posts', ['1', 'error' => $e->getMessage()]);
+    }
+  }
+
+  public function delete($request)
+  {
+    $postId = $request['id'] ?? null;
+    if (is_null($postId)) {
+      $this->redirector->redirect('posts', ['1', 'error' => 'ID de publication invalide']);
+      return;
+    }
+    try {
+    } catch (\Exception $e) {
+      $this->redirector->redirect('posts', ['1', 'error' => $e->getMessage()]);
+    }
+  }
+
+
   public function paginatedPosts($page)
   {
     $viewRenderer = new ViewRenderer;
@@ -55,9 +88,8 @@ class PostController
   public function viewPost($id, $error = null)
   {
     if (is_numeric($id) === false) {
-        throw new \Exception("L'identifiant du post n'est pas valide");
-
-        return;
+      throw new \Exception("L'identifiant du post n'est pas valide");
+      return;
     }
     $viewRenderer = new ViewRenderer;
     $db = new Database();

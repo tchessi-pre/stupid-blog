@@ -5,8 +5,9 @@ namespace App\Controller;
 use App\Service\CategoryService;
 use App\View\ViewRenderer;
 use App\Class\Redirector;
+use App\Interface\ControllerInterface;
 
-class CategoryController
+class CategoryController implements ControllerInterface
 {
   private CategoryService $categoryService;
   private ViewRenderer $viewRenderer;
@@ -19,7 +20,7 @@ class CategoryController
     $this->redirector = $redirector;
   }
 
-  public function createCategory($request)
+  public function create($request)
   {
     $name = $request['name'] ?? '';
 
@@ -36,7 +37,7 @@ class CategoryController
     }
   }
 
-  public function updateCategory($request)
+  public function update($request)
   {
     $categoryId = $request['id'] ?? null;
     $name = $request['name'] ?? '';
@@ -61,7 +62,7 @@ class CategoryController
     }
   }
 
-  public function deleteCategory($request)
+  public function delete($request)
   {
     $categoryId = $request['id'] ?? null;
 
