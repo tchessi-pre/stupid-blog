@@ -1,17 +1,17 @@
 <?php
-
-use App\Class\Controller;
 use App\Class\Database;
 use App\Controller\CommentController;
 use App\Controller\PostController;
 use App\Class\Redirector;
+use App\Controller\UserController;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
+use App\Repository\UserRepository;
 use App\Router\Router;
 use App\Service\CommentService;
 use App\Service\PostService;
+use App\Service\UserService;
 use App\View\ViewRenderer;
-
 require_once 'vendor/autoload.php';
 
 session_start();
@@ -22,52 +22,82 @@ $router = new Router($_SERVER['REQUEST_URI']);
 $router->setBasePath('/stupid-blog/');
 
 $router->get('/', function () {
-    $controller = new Controller();
-    $controller->render('index');
+    $viewRenderer = new ViewRenderer;
+    $viewRenderer->render('index');
 }, "home");
 
 $router->get('/register', function () {
     try {
-        $controller = new Controller();
-        $controller->render('register');
+        $viewRenderer = new ViewRenderer;
+        $viewRenderer->render('register');
     } catch (\Exception $e) {
-        $controller->render('register', ['error' => $e->getMessage()]);
+        $viewRenderer->render('register', ['error' => $e->getMessage()]);
     }
 }, "register");
 
 $router->post('/register', function () {
     try {
-        $controller = new Controller();
-        $controller->registerUser($_POST['email'], $_POST['password'], $_POST['password_confirm'], $_POST['firstname'], $_POST['lastname']);
-        $controller->redirect('login');
+        $db = new Database();
+        $connection = $db->getConnection();
+        $userRepository = new UserRepository($connection);
+        $userService = new UserService($userRepository);
+        $viewRenderer = new ViewRenderer;
+        $redirector = new Redirector;
+        $userController = new UserController($userService, $viewRenderer, $redirector);
+        $userController->registerUser($_POST['email'], $_POST['password'], $_POST['password_confirm'], $_POST['firstname'], $_POST['lastname']);
+        $redirector->redirect('login');
     } catch (\Exception $e) {
-        $controller->render('register', ['error' => $e->getMessage()]);
+        $viewRenderer->render('register', ['error' => $e->getMessage()]);
     }
 }, "register");
 
+
 $router->get('/login', function () {
-    $controller = new Controller();
-    $controller->render('login');
+    $viewRenderer = new ViewRenderer;
+    $viewRenderer->render('login');
 }, "login");
 
 $router->post('/login', function () {
     try {
-        $controller = new Controller();
-        $controller->loginUser($_POST['email'], $_POST['password']);
+
+        $db = new Database();
+        $connection = $db->getConnection();
+        $userRepository = new UserRepository($connection);
+        $userService = new UserService($userRepository);
+        $viewRenderer = new ViewRenderer;
+        $redirector = new Redirector;
+        $userController = new UserController($userService, $viewRenderer, $redirector);
+        $userController->loginUser($_POST['email'], $_POST['password']);
     } catch (\Exception $e) {
-        $controller->render('login', ['error' => $e->getMessage()]);
+        $viewRenderer->render('login', ['error' => $e->getMessage()]);
     }
-}, "login");
+},
+    "login"
+);
 
 $router->get('/logout', function () {
-    $controller = new Controller();
-    $controller->logoutUser();
+    $db = new Database();
+    $connection = $db->getConnection();
+    $userRepository = new UserRepository($connection);
+    $userService = new UserService($userRepository);
+    $viewRenderer = new ViewRenderer;
+    $redirector = new Redirector;
+    $userController = new UserController($userService, $viewRenderer, $redirector);
+    $userController->logoutUser();
 }, "logout");
 
+
 $router->get('/profile', function () {
-    $controller = new Controller();
-    $controller->profile();
+    $db = new Database();
+    $connection = $db->getConnection();
+    $userRepository = new UserRepository($connection);
+    $userService = new UserService($userRepository);
+    $viewRenderer = new ViewRenderer;
+    $redirector = new Redirector;
+    $userController = new UserController($userService, $viewRenderer, $redirector);
+    $userController->profile();
 }, "profile");
+
 
 $router->get('/posts/:page', function ($page = 1) {
     $db = new Database();
@@ -79,6 +109,7 @@ $router->get('/posts/:page', function ($page = 1) {
     $controller = new PostController($postService, $viewRenderer, $redirector);
     $controller->paginatedPosts($page);
 }, "posts")->with('page', '[0-9]+');
+
 
 $router->get('/post/:id', function ($id) {
     $db = new Database();
@@ -92,17 +123,6 @@ $router->get('/post/:id', function ($id) {
 }, "post")->with('id', '[0-9]+');
 
 
-
-
-
-// $router->post('/comments/:post_id', function ($post_id) {
-//     try {
-//         $controller = new Controller();
-//         $controller->createComment($_POST['content'], $post_id);
-//     } catch (\Exception $e) {
-//         $controller->viewPost($post_id, ['error' => $e->getMessage()]);
-//     }
-// }, "add_comment")->with('post_id', '[0-9]+');
 
 $router->post('/comments/:post_id', function ($post_id) {
     $db = new PDO('mysql:host=localhost;dbname=solid-blog;charset=utf8', 'root', '', [
@@ -128,18 +148,27 @@ $router->post('/comments/:post_id', function ($post_id) {
 
 
 $router->get('/admin/:action/:entity', function ($action = 'list', $entity = 'user') {
-    $controller = new Controller();
-    $controller->admin($action, $entity);
+    $db = new Database();
+    $connection = $db->getConnection();
+    $userRepository = new UserRepository($connection);
+    $userService = new UserService($userRepository);
+    $userService->admin($action, $entity);
 }, "admin")->with('action', 'list')->with('entity', 'user|post|comment|category');
 
 $router->get('/admin/:action/:entity/:id', function ($action = 'list', $entity = 'user', $id = null) {
-    $controller = new Controller();
-    $controller->admin($action, $entity, $id);
+    $db = new Database();
+    $connection = $db->getConnection();
+    $userRepository = new UserRepository($connection);
+    $userService = new UserService($userRepository);
+    $userService->admin($action, $entity, $id);
 }, "admin-entity")->with('action', 'show')->with('entity', 'user|post|comment|category')->with('id', '[0-9]+');
 
 $router->post('/admin/:action/:entity/:id', function ($action = 'list', $entity = 'user', $id = null) {
-    $controller = new Controller();
-    $controller->admin($action, $entity, $id);
+    $db = new Database();
+    $connection = $db->getConnection();
+    $userRepository = new UserRepository($connection);
+    $userService = new UserService($userRepository);
+    $userService->admin($action, $entity, $id);
 }, "admin-entity")->with('action', 'edit|delete')->with('entity', 'user|post|comment|category')->with('id', '[0-9]+');
 
 

@@ -19,43 +19,51 @@ class CommentRepository
         $this->db = $db;
     }
 
-    public function save($comment)
+    public function save(CommentModel $comment)
     {
-        $comment = new CommentModel();
         if (null === $comment->getId()) {
-            $this->insert();
+            $this->insert($comment);
         } else {
-            $this->update();
+            $this->update($comment);
         }
     }
 
-    private function insert()
+    private function insert(CommentModel $comment)
     {
-        $comment = new CommentModel();
         $connection = Database::getConnection();
-        $stmt = $this->db->prepare("INSERT INTO comment (content, user_id, post_id, created_at) VALUES (:content, :user_id, :post_id, :created_at)");
+        $stmt = $this->db->prepare("INSERT INTO comment (content, created_at, user_id, post_id) VALUES (:content, :created_at, :user_id, :post_id)");
         $stmt->execute([
             'content' => $comment->getContent(),
+            'created_at' => $comment->getCreatedAt()->format('Y-m-d H:i:s'),
             'user_id' => $comment->getUserId(),
-            'post_id' => $comment->getPostId(),
-            'created_at' => $comment->getCreatedAt()->format('Y-m-d H:i:s')
+            'post_id' => $comment->getPostId()
         ]);
         $comment->setId($connection->lastInsertId());
+
+
+        // $pdo = Database::getConnection();
+        // $query = $pdo->prepare('INSERT INTO comment (content, created_at, user_id, post_id) VALUES (:content, :created_at, :user_id, :post_id)');
+        // $query->execute([
+        //     'content' => $this->content,
+        //     'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
+        //     'user_id' => $this->user->getId(),
+        //     'post_id' => $this->post->getId()
+        // ]);
+        // $this->id = $pdo->lastInsertId();
     
     }
 
-    private function update()
+    private function update(CommentModel $comment)
     {
-        $comment = new CommentModel();
         $connection = Database::getConnection();
-        $stmt = $this->db->prepare("INSERT INTO comment (content, user_id, post_id, created_at) VALUES (:content, :user_id, :post_id, :created_at)");
+        $stmt = $this->db->prepare("UPDATE comment SET content = :content, created_at = :created_at, user_id = :user_id, post_id = :post_id WHERE id = :id");
         $stmt->execute([
             'content' => $comment->getContent(),
+            'created_at' => $comment->getCreatedAt()->format('Y-m-d H:i:s'),
             'user_id' => $comment->getUserId(),
             'post_id' => $comment->getPostId(),
-            'created_at' => $comment->getCreatedAt()->format('Y-m-d H:i:s')
+            'id' => $comment->getId(),
         ]);
-        $comment->setId($connection->lastInsertId());
     }
 
     public function toArray($comment): array

@@ -5,6 +5,8 @@ use App\Model\PostModel;
 use App\Router\Router;
 use App\Class\User;
 use App\Model\CategoryModel;
+use App\Model\UserModel;
+use App\Controller\UserController;
 
 /** @var PostModel $post */
 $post;
@@ -13,7 +15,7 @@ $post;
 
 <body>
     <h1><?= $post->getTitle() ?></h1>
-    <?php $userPost = new User($post->getUserId()) ?>
+    <?php $userPost = new UserModel($post->getUserId()) ?>
     <p>Écrit par : <?= $userPost->getFirstname() ?> <?= $userPost->getLastname() ?></p>
     <?php $category = new CategoryModel($post->getCategoryId()) ?>
     <p>Catégorie : <?= $category->getName() ?></p>
@@ -22,12 +24,12 @@ $post;
     <div>
         <h2>Commentaires</h2>
         <?php foreach ($post->getComments() as $comment) : ?>
-        <?php $user = new User($comment->getUserId()) ?>
+        <?php $user = new UserModel($comment->getUserId()) ?>
             <p><?= $comment->getContent() ?></p>
             <p><?= $user->getFirstname() ?> <?= $user->getLastname() ?></p>
             <p><?= $comment->getCreatedAt()->format('d/m/Y') ?></p>
         <?php endforeach; ?>
-        <?php if (Controller::getUser()) : ?>
+        <?php if (UserController::getUser()) : ?>
             <?php if (isset($error['error'])) : ?>
                 <p><?= $error['error'] ?></p>
             <?php endif; ?>
