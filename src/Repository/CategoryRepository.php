@@ -4,8 +4,9 @@ namespace App\Repository;
 
 use PDO;
 use App\Model\CategoryModel;
+use App\Interface\RepositoryInterface;
 
-class CategoryRepository
+class CategoryRepository implements RepositoryInterface
 {
   private PDO $db;
 
@@ -14,26 +15,18 @@ class CategoryRepository
     $this->db = $db;
   }
 
-  public function save(CategoryModel $category)
+  public function save($model)
   {
     $stmt = $this->db->prepare("INSERT INTO category (name) VALUES (:name)");
     $stmt->execute([
-      'name' => $category->getName(),
+      'name' => $model->getName(),
     ]);
   }
 
-  public function toArray(CategoryModel $category): array
-  {
-    return [
-      'id' => $category->getId(),
-      'name' => $category->getName(),
-    ];
-  }
-
-  public function findOneById(int $categoryId): ?CategoryModel
+  public function findOneById(int $id)
   {
     $stmt = $this->db->prepare('SELECT * FROM category WHERE id = :id');
-    $stmt->execute(['id' => $categoryId]);
+    $stmt->execute(['id' => $id]);
 
     $categoryData = $stmt->fetch();
 
@@ -65,10 +58,10 @@ class CategoryRepository
     return $categories;
   }
 
-  public function delete(int $categoryId)
+  public function delete(int $id)
   {
-    $stmt = $this->db->prepare('DELETE FROM category WHERE id = :categoryId');
-    $stmt->bindValue(':categoryId', $categoryId, \PDO::PARAM_INT);
+    $stmt = $this->db->prepare('DELETE FROM category WHERE id = :id');
+    $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
     $stmt->execute();
   }
 }

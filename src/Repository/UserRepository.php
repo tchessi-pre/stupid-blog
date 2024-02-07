@@ -2,11 +2,11 @@
 
 namespace App\Repository;
 
-use App\Class\Database;
 use PDO;
 use App\Model\UserModel;
+use App\Interface\RepositoryInterface;
 
-class UserRepository
+class UserRepository implements RepositoryInterface
 {
     private $db;
 
@@ -32,7 +32,7 @@ class UserRepository
         $user->setPassword($userData['password']);
         $user->setFirstname($userData['firstname']);
         $user->setLastname($userData['lastname']);
-        $user->setRole(json_decode($userData['role']), true);
+        $user->setRole(json_decode($userData['role'], true));
 
         return $user;
     }
@@ -45,12 +45,12 @@ class UserRepository
 
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $userData) {
             $user = new UserModel();
-            $user->setId($user['id']);
-            $user->setEmail($user['email']);
-            $user->setPassword($user['password']);
-            $user->setFirstname($user['firstname']);
-            $user->setLastname($user['lastname']);
-            $user->setRole(json_decode($user['role'], true));
+            $user->setId($userData['id']);
+            $user->setEmail($userData['email']);
+            $user->setPassword($userData['password']);
+            $user->setFirstname($userData['firstname']);
+            $user->setLastname($userData['lastname']);
+            $user->setRole(json_decode($userData['role'], true));
             $users[] = $user;
         }
         return $users;
@@ -65,17 +65,17 @@ class UserRepository
         $userModel = new UserModel();
         if ($user) {
             $userModel->setId($user['id']);
-            $userModel->setEmail ($user['email']);
-            $userModel->setPassword ($user['password']);
-            $userModel->setFirstname ($user['firstname']);
-            $userModel->setLastname ($user['lastname']);
-            $userModel->setRole (json_decode($user['role'], true));
+            $userModel->setEmail($user['email']);
+            $userModel->setPassword($user['password']);
+            $userModel->setFirstname($user['firstname']);
+            $userModel->setLastname($user['lastname']);
+            $userModel->setRole(json_decode($user['role'], true));
             return $userModel;
         } else {
             return false;
         }
     }
-    public function save(UserModel $user)
+    public function save($user)
     {
         if (null === $user->getId()) {
             $this->insert($user);
@@ -86,7 +86,6 @@ class UserRepository
 
     private function insert(UserModel $user)
     {
-        $connection = Database::getConnection();
         $stmt = $this->db->prepare('INSERT INTO user (email, password, firstname, lastname, role) VALUES (:email, :password, :firstname, :lastname, :role)');
         $stmt->bindValue(':email', $user->getEmail(), \PDO::PARAM_STR);
         $stmt->bindValue(':password', $user->getPassword(), \PDO::PARAM_STR);
@@ -94,8 +93,7 @@ class UserRepository
         $stmt->bindValue(':lastname', $user->getLastname(), \PDO::PARAM_STR);
         $stmt->bindValue(':role', json_encode($user->getRole()), \PDO::PARAM_STR);
         $stmt->execute();
-        $user->setId($connection->lastInsertId());
-    
+        $user->setId($this->db->lastInsertId());
     }
 
     private function update(UserModel $user)
@@ -106,6 +104,7 @@ class UserRepository
         $stmt->bindValue(':firstname', $user->getFirstname(), \PDO::PARAM_STR);
         $stmt->bindValue(':lastname', $user->getLastname(), \PDO::PARAM_STR);
         $stmt->bindValue(':role', json_encode($user->getRole()), \PDO::PARAM_STR);
+        $stmt->bindValue(':id', $user->getId(), \PDO::PARAM_INT);
         $stmt->execute();
     }
 
@@ -116,7 +115,7 @@ class UserRepository
         $stmt->execute();
     }
 
-        public function toArray($user): array
+    public function toArray($user): array
     {
         return [
             'id' => $user->getId(),
@@ -126,6 +125,4 @@ class UserRepository
             'role' => $user->getRole()
         ];
     }
-
-    
 }

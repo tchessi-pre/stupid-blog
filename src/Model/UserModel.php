@@ -2,9 +2,9 @@
 
 namespace App\Model;
 
+use App\Repository\PostRepository;
 use App\Repository\CommentRepository;
 use App\Class\Database;
-use App\Repository\PostRepository;
 
 class UserModel
 {
@@ -19,185 +19,122 @@ class UserModel
 
     public function __construct()
     {
+        // Initialisez les propriétés posts et comments dans le constructeur
+        $this->posts = [];
+        $this->comments = [];
     }
 
-     /**
-     * Get the value of id
-     */
+    // Getters et setters pour les autres propriétés
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * Set the value of id
-     *
-     * @return  self
-     */
     public function setId(int $id): self
     {
         $this->id = $id;
-
         return $this;
     }
 
-    /**
-     * Get the value of email
-     */
     public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    /**
-     * Set the value of email
-     *
-     * @return  self
-     */
     public function setEmail(string $email): self
     {
         $this->email = $email;
-
         return $this;
     }
 
-    /**
-     * Get the value of password
-     */
     public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    /**
-     * Set the value of password
-     *
-     * @return  self
-     */
     public function setPassword(string $password): self
     {
         $this->password = $password;
-
         return $this;
     }
 
-    /**
-     * Get the value of firstname
-     */
     public function getFirstname(): ?string
     {
         return $this->firstname;
     }
 
-    /**
-     * Set the value of firstname
-     *
-     * @return  self
-     */
     public function setFirstname(string $firstname): self
     {
         $this->firstname = $firstname;
-
         return $this;
     }
 
-    /**
-     * Get the value of lastname
-     */
     public function getLastname(): ?string
     {
         return $this->lastname;
     }
 
-    /**
-     * Set the value of lastname
-     *
-     * @return  self
-     */
     public function setLastname(string $lastname): self
     {
         $this->lastname = $lastname;
-
         return $this;
     }
 
-    /**
-     * Get the value of role
-     */
     public function getRole(): array
     {
         return $this->role;
     }
 
-    /**
-     * Set the value of role
-     * 
-     * @param array $role
-     * @return  self
-     */
     public function setRole(array $role): self
     {
         $this->role = $role;
-
         return $this;
     }
 
-        /**
-     * getPosts
-     * 
-     * @return array Post[]
-     */
     public function getPosts(): array
     {
-        $db = new Database();
-        $connection = $db->getConnection();
+        // Assurez-vous que les posts sont récupérés uniquement s'ils ne sont pas déjà chargés
         if (empty($this->posts)) {
+            // Logique pour récupérer les posts de l'utilisateur depuis la base de données
+            $db = new Database();
+            $connection = $db->getConnection();
             $postRepository = new PostRepository($connection);
             $this->posts = $postRepository->findByUser($this);
         }
         return $this->posts;
     }
 
-        /**
-     * setComments
-     *
-     * @param  array $comments
-     * @return self
-     */
-    public function setPosts(array $posts)
+    public function setPosts(array $posts): self
     {
+        // Définissez les posts et assurez-vous de mettre à jour les IDs des posts
         $this->posts = $posts;
         foreach ($posts as $post) {
-            $post->setPostId($this->getId());
+            $post->setUserId($this->getId());
         }
-
         return $this;
     }
 
     public function getComments(): array
     {
-        $db = new Database();
-        $connection = $db->getConnection();
+        // Assurez-vous que les commentaires sont récupérés uniquement s'ils ne sont pas déjà chargés
         if (empty($this->comments)) {
+            // Logique pour récupérer les commentaires de l'utilisateur depuis la base de données
+            $db = new Database();
+            $connection = $db->getConnection();
             $commentRepository = new CommentRepository($connection);
-            $this->comments = $commentRepository->findByUser($this->id); 
+            $this->comments = $commentRepository->findByUser($this->id);
         }
         return $this->comments;
     }
 
-        /**
-     * setComments
-     *
-     * @param  array $comments
-     * @return self
-     */
     public function setComments(array $comments): self
     {
+        // Définissez les commentaires et assurez-vous de mettre à jour les IDs des commentaires
         $this->comments = $comments;
         foreach ($comments as $comment) {
-            $comment->setPostId($this->getId());
+            $comment->setUserId($this->getId());
         }
-
         return $this;
     }
 }
