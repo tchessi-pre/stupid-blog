@@ -17,19 +17,17 @@ class PostRepository
     $this->db = $db;
   }
 
-  public function save()
+  public function save(PostModel $post)
   {
-    $post = new PostModel();
     if (empty($post->getId())) {
-      $this->insert();
+      $this->insert($post);
     } else {
-      $this->update();
+      $this->update($post);
     }
   }
 
-  public function insert()
+  public function insert(PostModel $post)
   {
-    $post = new PostModel();
     $stmt = $this->db->prepare('INSERT INTO post (title, content, user_id, category_id, created_at) VALUES (:title, :content, :user_id, :category_id, NOW())');
     $stmt->bindValue(':title', $post->getTitle(), \PDO::PARAM_STR);
     $stmt->bindValue(':content', $post->getContent(), \PDO::PARAM_STR);
@@ -39,9 +37,8 @@ class PostRepository
     $post->setId($this->db->lastInsertId());
   }
 
-  public function update()
+  public function update(PostModel $post)
   {
-    $post = new PostModel();
     $stmt = $this->db->prepare('UPDATE post SET title = :title, content = :content, user_id = :user_id, category_id = :category_id, updated_at = NOW() WHERE id = :id');
     $stmt->bindValue(':id', $post->getId(), \PDO::PARAM_INT);
     $stmt->bindValue(':title', $post->getTitle(), \PDO::PARAM_STR);

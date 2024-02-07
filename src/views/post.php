@@ -15,26 +15,26 @@ use App\Class\Database;
 /** @var PostModel $post */
 $post;
 
+$db = new Database();
+$connection = $db->getConnection();
+$categoryRepository = new CategoryRepository($connection);
+$categoryService = new CategoryService($categoryRepository);
+$category = $categoryService->getCategoryById($post->getCategoryId());
+
 
 ?>
 
 <body>
     <h1><?= $post->getTitle() ?></h1>
-    <?php $userPost = new UserModel($post->getUserId()) ?>
-    <p>Écrit par : <?= $userPost->getFirstname() ?> <?= $userPost->getLastname() ?></p>
-    <?php 
-    $db = new Database();
-    $connection = $db->getConnection();
-    $categoryRepository = new CategoryRepository($connection);
-    $categoryService = new CategoryService($categoryRepository);
-    $category = $categoryService->getCategoryById($post->getCategoryId()); ?>
+    <?php $userPost = new PostModel($post->getUserId()); var_dump($userPost)?>
+    <p>Écrit par : </p>
     <p>Catégorie : <?= $category->getName() ?></p>
     <p><?= $post->getContent() ?></p>
     <p><?= $post->getCreatedAt()->format('d/m/Y') ?></p>
     <div>
         <h2>Commentaires</h2>
         <?php foreach ($post->getComments() as $comment) : ?>
-        <?php $user = new UserModel($comment->getUserId()) ?>
+            <?php $user = new UserModel($comment->getUserId()) ?>
             <p><?= $comment->getContent() ?></p>
             <p><?= $user->getFirstname() ?> <?= $user->getLastname() ?></p>
             <p><?= $comment->getCreatedAt()->format('d/m/Y') ?></p>
