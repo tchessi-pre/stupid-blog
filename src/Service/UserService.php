@@ -19,11 +19,157 @@ class UserService
         $this->userRepository = $userRepository;
     }
 
+    public function deleteUser($userId) {
+        if (empty($userId)) {
+            throw new \Exception("ID d'utilisateur invalide");
+        }
+
+        $user = $this->userRepository->findOneById($userId);
+        if (!$user) {
+            throw new \Exception("Utilisateur introuvable");
+        }
+
+        $this->userRepository->delete($userId);
+    }
+
+    public function updateUser($userId, $email, $firstname, $lastname) {
+        
+        
+        if (empty($userId)) {
+           
+            throw new \Exception("ID d'utilisateur invalide");
+        }
+
+        $user = $this->userRepository->findOneById($userId);
+        if (!$user) {
+            var_dump('coucou'); die;
+            throw new \Exception("Utilisateur introuvable");
+        }
+
+        if (empty($email) || empty($firstname) || empty($lastname)) {
+            throw new \Exception("Tous les champs sont obligatoires");
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new \Exception("L'email n'est pas valide");
+        }
+        $user->setEmail($email);
+        $user->setFirstname($firstname);
+        $user->setLastname($lastname);
+
+        $this->userRepository->save($user);
+    }
+
+    public function createUser($email, $password, $confirmPassword, $firstname, $lastname) {
+        if (empty($email) || empty($password) || empty($confirmPassword) || empty($firstname) || empty($lastname)) {
+            throw new \Exception("Tous les champs sont obligatoires");
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new \Exception("L'email n'est pas valide");
+        }
+
+        if ($password !== $confirmPassword) {
+            throw new \Exception("Les mots de passe ne correspondent pas");
+        }
+
+        if ($this->userRepository->findOneByEmail($email)) {
+            throw new \Exception("L'email existe déjà");
+        }
+
+        $user = new UserModel();
+        $user->setEmail($email);
+        $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
+        $user->setFirstname($firstname);
+        $user->setLastname($lastname);
+        $user->setRole(['ROLE_USER']);
+
+        $this->userRepository->save($user);
+    }
+
+    public function updateProfile(UserModel $user)
+    {
+   
+      
+    
+        $this->userRepository->save($user);
+    }
+    
+
+
+    public function hasRole($userId, $role): bool {
+        $user = $this->userRepository->findOneById($userId);
+        if ($user) {
+            return in_array($role, $user->getRole()); 
+        }
+        return false;
+    }
+
+    public function authenticate($data): bool {
+
+        $email = $data['email'] ?? '';
+        $password = $data['password'] ?? '';
+      
+        if (empty($email) || empty($password)) {
+            throw new \Exception("Tous les champs sont obligatoires");
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new \Exception("L'email n'est pas valide");
+        }
+
+        $user = $this->userRepository->findOneByEmail($email);
+
+        if (!$user || !password_verify($password, $user->getPassword())) {
+            throw new \Exception("Les identifiants sont incorrects");
+        }
+
+        $user->setPassword('');
+        $_SESSION['user'] = $user;
+
+        return true;
+    }
+
+    public function register($data)
+    {
+        $email = $data['email'] ?? '';
+        $password = $data['password'] ?? '';
+        $confirmPassword = $data['password_confirm'] ?? ''; // Assurez-vous que le nom de clé correspond à celui du formulaire HTML
+        $firstname = $data['firstname'] ?? '';
+        $lastname = $data['lastname'] ?? '';
+
+        if (empty($email) || empty($password) || empty($confirmPassword) || empty($firstname) || empty($lastname)) {
+            throw new \Exception("Tous les champs sont obligatoires");
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new \Exception("L'email n'est pas valide");
+        }
+
+        if ($this->userRepository->findOneByEmail($email)) {
+            throw new \Exception("L'email existe déjà");
+        }
+
+        if ($password !== $confirmPassword) {
+            throw new \Exception("Les mots de passe ne correspondent pas");
+        }
+        $user = new UserModel();
+        $user->setEmail($email);
+        $user->setPassword(password_hash($password, PASSWORD_DEFAULT));
+        $user->setFirstname($firstname);
+        $user->setLastname($lastname);
+        $user->setRole(['ROLE_USER']);
+        $this->userRepository->save($user);
+    }
+
+    public function getUserById($id): ?UserModel {
+        return $this->userRepository->getUserById($id);
+    }
+
     public function addPost(PostModel $post): UserModel
     {
         $user = new UserModel($post->getUserId());
         if (!in_array($post, $user->getPosts()) && $post->getUserId() === $user->getId() && [] !== $user->getPosts()) {
-            // $this->posts[] = $post;
             $user->setPosts($post[]);
         } else {
             $user->getPosts();
@@ -192,4 +338,6 @@ class UserService
 
         $redirector->redirect('admin', ['entity' => strtolower($entity), 'action' => 'list']);
     }
+
+    
 }

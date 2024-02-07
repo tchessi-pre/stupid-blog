@@ -103,13 +103,11 @@ class UserRepository implements RepositoryInterface
 
     private function update(UserModel $user)
     {
-        $stmt = $this->db->prepare('UPDATE user SET email = :email, password = :password, firstname = :firstname, lastname = :lastname, role = :role WHERE id = :id');
+        $stmt = $this->db->prepare('UPDATE user SET email = :email, firstname = :firstname, lastname = :lastname WHERE id = :id');
+        $stmt->bindValue(':id', $user->getId(), \PDO::PARAM_INT);
         $stmt->bindValue(':email', $user->getEmail(), \PDO::PARAM_STR);
-        $stmt->bindValue(':password', $user->getPassword(), \PDO::PARAM_STR);
         $stmt->bindValue(':firstname', $user->getFirstname(), \PDO::PARAM_STR);
         $stmt->bindValue(':lastname', $user->getLastname(), \PDO::PARAM_STR);
-        $stmt->bindValue(':role', json_encode($user->getRole()), \PDO::PARAM_STR);
-        $stmt->bindValue(':id', $user->getId(), \PDO::PARAM_INT);
         $stmt->execute();
     }
 
@@ -130,4 +128,5 @@ class UserRepository implements RepositoryInterface
             'role' => $user->getRole()
         ];
     }
+
 }

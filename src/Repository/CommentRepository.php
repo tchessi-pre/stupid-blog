@@ -5,7 +5,6 @@ namespace App\Repository;
 use PDO;
 use App\Model\CommentModel;
 use DateTime;
-use App\Class\Database;
 use App\Interface\RepositoryInterface;
 
 class CommentRepository implements RepositoryInterface

@@ -3,6 +3,14 @@
 use App\Class\Controller;
 use App\Controller\UserController;
 use App\Router\Router;
+use App\Service\UserService;
+use App\Repository\UserRepository;
+use App\Class\Database;
+
+$db = new Database();
+$connection = $db->getConnection();
+
+$userService = new UserService(new UserRepository($connection));
 
 ?>
 <!DOCTYPE html>
@@ -18,6 +26,7 @@ use App\Router\Router;
     <h1>Stupid Blog</h1>
     
     <?php if (UserController::getUser()) : ?>
+        <?php $userId = UserController::getUser()->getId(); ?>
         <p>Bonjour <?= UserController::getUser()->getFirstname() ?> <?= UserController::getUser()->getLastname() ?></p>
     <?php endif ?>
     <nav>
@@ -27,7 +36,7 @@ use App\Router\Router;
             <?php if (null !== UserController::getUser()) : ?>
                 <li><a href="<?= Router::url('profile') ?>">Profil</a></li>
                 <li><a href="<?= Router::url('logout') ?>">Se déconnecter</a></li>
-                <?php if (UserController::hasRole('ROLE_ADMIN')) : ?>
+                <?php if ($userService->hasRole($userId,'ROLE_ADMIN')) : ?>
                     <li><a href="<?= Router::url('admin', ['action' => 'list', 'entity' => 'user']) ?>">Admin</a></li>
                 <?php endif ?>
             <?php else : ?>

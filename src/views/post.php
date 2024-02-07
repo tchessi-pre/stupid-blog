@@ -1,11 +1,7 @@
 <?php
 
-use App\Class\Controller;
 use App\Model\PostModel;
 use App\Router\Router;
-use App\Class\User;
-use App\Controller\CategoryController;
-use App\Model\CategoryModel;
 use App\Model\UserModel;
 use App\Controller\UserController;
 use App\Repository\CategoryRepository;
@@ -19,11 +15,13 @@ $post;
 
 $db = new Database();
 $connection = $db->getConnection();
-$categoryRepository = new CategoryRepository($connection);
-$categoryService = new CategoryService($categoryRepository);
+
+$categoryService = new CategoryService(new CategoryRepository($connection));
+$userService = new UserService(new UserRepository($connection));
+
 $category = $categoryService->getCategoryById($post->getCategoryId());
-$userRepository = new UserRepository($connection);
-$user = $userRepository->getUserById($post->getUserId());
+$user = $userService->getUserById($post->getUserId());
+
 ?>
 
 <body>

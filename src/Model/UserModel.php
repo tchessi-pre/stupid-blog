@@ -19,12 +19,9 @@ class UserModel
 
     public function __construct()
     {
-        // Initialisez les propriétés posts et comments dans le constructeur
         $this->posts = [];
         $this->comments = [];
     }
-
-    // Getters et setters pour les autres propriétés
 
     public function getId(): ?int
     {

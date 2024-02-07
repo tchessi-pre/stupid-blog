@@ -16,160 +16,119 @@ require_once 'vendor/autoload.php';
 
 session_start();
 
+$services = [];
+$services['db'] = function () {
+    return new Database();
+};
+$services['viewRenderer'] = function () {
+    return new ViewRenderer();
+};
+$services['redirector'] = function () {
+    return new Redirector();
+};
+$services['userRepository'] = function () use ($services) {
+    return new UserRepository($services['db']()->getConnection());
+};
+
+$services['postRepository'] = function () use ($services) {
+    return new PostRepository($services['db']()->getConnection());
+};
+
+$services['commentRepository'] = function () use ($services) {
+    return new CommentRepository($services['db']()->getConnection());
+};
+
+$services['userService'] = function () use ($services) {
+    return new UserService($services['userRepository']());
+};
+
+$services['postService'] = function () use ($services) {
+    return new PostService($services['postRepository']());
+};
+
+$services['commentService'] = function () use ($services) {
+    return new CommentService($services['commentRepository']());
+};
+
 
 $router = new Router($_SERVER['REQUEST_URI']);
 
 $router->setBasePath('/stupid-blog/');
 
-$router->get('/', function () {
-    $viewRenderer = new ViewRenderer;
-    $viewRenderer->render('index');
+$router->get('/', function () use ($services) {
+    $services['viewRenderer']()->render('index');
 }, "home");
 
-$router->get('/register', function () {
+$router->get('/register', function () use ($services) {
     try {
-        $viewRenderer = new ViewRenderer;
-        $viewRenderer->render('register');
+        $services['viewRenderer']()->render('register');
     } catch (\Exception $e) {
-        $viewRenderer->render('register', ['error' => $e->getMessage()]);
+        $services['viewRenderer']()->render('register', ['error' => $e->getMessage()]);
     }
 }, "register");
 
-$router->post('/register', function () {
-    try {
-        $db = new Database();
-        $connection = $db->getConnection();
-        $userRepository = new UserRepository($connection);
-        $userService = new UserService($userRepository);
-        $viewRenderer = new ViewRenderer;
-        $redirector = new Redirector;
-        $userController = new UserController($userService, $viewRenderer, $redirector);
-        $userController->registerUser($_POST['email'], $_POST['password'], $_POST['password_confirm'], $_POST['firstname'], $_POST['lastname']);
-        $redirector->redirect('login');
-    } catch (\Exception $e) {
-        $viewRenderer->render('register', ['error' => $e->getMessage()]);
-    }
+$router->post('/register', function () use ($services) {
+    $userService = new UserService($services['userRepository']());
+    $userController = new UserController($userService, $services['viewRenderer'](), $services['redirector']());
+    $userController->registerUser($_POST);
 }, "register");
 
-
-$router->get('/login', function () {
-    $viewRenderer = new ViewRenderer;
-    $viewRenderer->render('login');
+$router->get('/login', function () use ($services) {
+    $services['viewRenderer']()->render('login');
 }, "login");
 
-$router->post('/login', function () {
-    try {
+$router->post('/login', function () use ($services) {
+    $userController = new UserController($services['userService'](), $services['viewRenderer'](), $services['redirector']());
+    $userController->loginUser($_POST);
+}, "login");
 
-        $db = new Database();
-        $connection = $db->getConnection();
-        $userRepository = new UserRepository($connection);
-        $userService = new UserService($userRepository);
-        $viewRenderer = new ViewRenderer;
-        $redirector = new Redirector;
-        $userController = new UserController($userService, $viewRenderer, $redirector);
-        $userController->loginUser($_POST['email'], $_POST['password']);
-    } catch (\Exception $e) {
-        $viewRenderer->render('login', ['error' => $e->getMessage()]);
-    }
-},
-    "login"
-);
-
-$router->get('/logout', function () {
-    $db = new Database();
-    $connection = $db->getConnection();
-    $userRepository = new UserRepository($connection);
-    $userService = new UserService($userRepository);
-    $viewRenderer = new ViewRenderer;
-    $redirector = new Redirector;
-    $userController = new UserController($userService, $viewRenderer, $redirector);
+$router->get('/logout', function () use ($services) {
+    $userController = new UserController($services['userService'](), $services['viewRenderer'](), $services['redirector']());
     $userController->logoutUser();
 }, "logout");
 
-
-$router->get('/profile', function () {
-    $db = new Database();
-    $connection = $db->getConnection();
-    $userRepository = new UserRepository($connection);
-    $userService = new UserService($userRepository);
-    $viewRenderer = new ViewRenderer;
-    $redirector = new Redirector;
-    $userController = new UserController($userService, $viewRenderer, $redirector);
+$router->get('/profile', function () use ($services) {
+    $userController = new UserController($services['userService'](), $services['viewRenderer'](), $services['redirector']());
     $userController->profile();
 }, "profile");
 
+$router->post('/profile', function () use ($services) {
+    $userController = new UserController($services['userService'](), $services['viewRenderer'](), $services['redirector']());
+    $userId = $_SESSION['user']->getId();
+    $userController->update($_POST);
 
-$router->get('/posts/:page', function ($page = 1) {
-    $db = new Database();
-    $connection = $db->getConnection();
-    $postRepository = new PostRepository($connection);
-    $postService = new PostService($postRepository);
-    $viewRenderer = new ViewRenderer;
-    $redirector = new Redirector;
-    $controller = new PostController($postService, $viewRenderer, $redirector);
-    $controller->paginatedPosts($page);
+}, "profile"); 
+
+$router->get('/posts/:page', function ($page = 1) use ($services) {
+    $postController = new PostController($services['postService'](), $services['viewRenderer'](), $services['redirector'](), $services['postRepository']());
+    $postController->paginatedPosts($page);
 }, "posts")->with('page', '[0-9]+');
 
-
-$router->get('/post/:id', function ($id) {
-    $db = new Database();
-    $connection = $db->getConnection();
-    $postRepository = new PostRepository($connection);
-    $postService = new PostService($postRepository);
-    $viewRenderer = new ViewRenderer;
-    $redirector = new Redirector;
-    $controller = new PostController($postService, $viewRenderer, $redirector);
-    $controller->viewPost($id);
+$router->get('/post/:id', function ($id) use ($services) {
+    $postController = new PostController($services['postService'](), $services['viewRenderer'](), $services['redirector'](), $services['postRepository']());
+    $postController->viewPost($id);
 }, "post")->with('id', '[0-9]+');
 
-
-
-$router->post('/comments/:post_id', function ($post_id) {
-    $db = new PDO('mysql:host=localhost;dbname=solid-blog;charset=utf8', 'root', '', [
-        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-        \PDO::ATTR_TIMEOUT => 90
-    ]); 
-    $commentRepository = new CommentRepository($db);
-    $commentService = new CommentService($commentRepository);
-    $viewRenderer = new ViewRenderer; 
-    $redirector = new Redirector;
-    $commentController = new CommentController($commentService, $viewRenderer, $redirector);
-
+$router->post('/comments/:post_id', function ($post_id) use ($services) {
+    $commentController = new CommentController($services['commentService'](), $services['viewRenderer'](), $services['redirector']());
     try {
         $commentController->create(['post_id' => $post_id, 'content' => $_POST['content']]);
     } catch (\Exception $e) {
-        $redirector->redirect('post', ['id' => $post_id, 'error' => $e->getMessage()]);
+        $services['redirector']()->redirect('post', ['id' => $post_id, 'error' => $e->getMessage()]);
     }
 }, "add_comment")->with('post_id', '[0-9]+');
 
-
-
-
-
-
-$router->get('/admin/:action/:entity', function ($action = 'list', $entity = 'user') {
-    $db = new Database();
-    $connection = $db->getConnection();
-    $userRepository = new UserRepository($connection);
-    $userService = new UserService($userRepository);
-    $userService->admin($action, $entity);
+$router->get('/admin/:action/:entity', function ($action = 'list', $entity = 'user') use ($services) {
+    $services['userService']()->admin($action, $entity);
 }, "admin")->with('action', 'list')->with('entity', 'user|post|comment|category');
 
-$router->get('/admin/:action/:entity/:id', function ($action = 'list', $entity = 'user', $id = null) {
-    $db = new Database();
-    $connection = $db->getConnection();
-    $userRepository = new UserRepository($connection);
-    $userService = new UserService($userRepository);
-    $userService->admin($action, $entity, $id);
-}, "admin-entity")->with('action', 'show')->with('entity', 'user|post|comment|category')->with('id', '[0-9]+');
+$router->get('/admin/:action/:entity/:id', function ($action, $entity, $id = null) use ($services) {
+    $services['userService']()->admin($action, $entity, $id);
+}, "admin-entity")->with('action', 'show|edit|delete')->with('entity', 'user|post|comment|category')->with('id', '[0-9]+');
 
-$router->post('/admin/:action/:entity/:id', function ($action = 'list', $entity = 'user', $id = null) {
-    $db = new Database();
-    $connection = $db->getConnection();
-    $userRepository = new UserRepository($connection);
-    $userService = new UserService($userRepository);
-    $userService->admin($action, $entity, $id);
-}, "admin-entity")->with('action', 'edit|delete')->with('entity', 'user|post|comment|category')->with('id', '[0-9]+');
+$router->post('/admin/:action/:entity/:id', function ($action, $entity, $id = null) use ($services) {
+    $services['userService']()->admin($action, $entity, $id);
+}, "admin-entity-action")->with('action', 'edit|delete')->with('entity', 'user|post|comment|category')->with('id', '[0-9]+');
 
 
 $router->run();
