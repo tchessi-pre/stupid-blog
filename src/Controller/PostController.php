@@ -6,6 +6,7 @@ use App\Class\Redirector;
 use App\View\ViewRenderer;
 use App\Repository\PostRepository;
 use App\Interface\ControllerInterface;
+use App\Interface\ServiceInterface;
 
 class PostController implements ControllerInterface
 {
@@ -14,7 +15,7 @@ class PostController implements ControllerInterface
   private $redirector;
   private $postRepository; 
 
-  public function __construct(PostService $postService, ViewRenderer $viewRenderer, Redirector $redirector, PostRepository $postRepository)
+  public function __construct(ServiceInterface $postService, ViewRenderer $viewRenderer, Redirector $redirector, PostRepository $postRepository)
   {
     $this->postService = $postService;
     $this->viewRenderer = $viewRenderer;
@@ -35,7 +36,7 @@ class PostController implements ControllerInterface
     }
 
     try {
-      $this->postService->createPost($title, $content, $userId, $categoryId);
+      $this->postService->create($title, $content, $userId, $categoryId);
       $this->redirector->redirect('posts', ['1']);
     } catch (\Exception $e) {
       $this->redirector->redirect('posts', ['1', 'error' => $e->getMessage()]);

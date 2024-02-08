@@ -22,17 +22,17 @@ class CommentController implements ControllerInterface
 
     public function create($request)
     {
+
         $postId = $request['post_id'] ?? null;
         $content = $request['content'] ?? '';
-        $userId = $_SESSION['user']->getId();
 
-        if (is_null($postId) || is_null($userId) || empty($content)) {
+        if (is_null($postId) || is_null($_SESSION['user']->getId()) || empty($content)) {
             $this->redirector->redirect('post', ['id' => $postId, 'error' => 'Commentaire invalide']);
             return;
         }
 
         try {
-            $this->commentService->createComment($content, $postId, $userId);
+            $this->commentService->create($request);
             $this->redirector->redirect('post', ['id' => $postId]);
         } catch (\Exception $e) {
             $this->redirector->redirect('post', ['id' => $postId, 'error' => $e->getMessage()]);
@@ -51,7 +51,7 @@ class CommentController implements ControllerInterface
         }
 
         try {
-            $this->commentService->updateComment($commentId, $content);
+            $this->commentService->update($commentId, $content);
             $this->redirector->redirect('post', ['id' => $postId, 'success' => 'Commentaire mis à jour avec succès']);
         } catch (\Exception $e) {
             $this->redirector->redirect('post', ['id' => $postId, 'error' => $e->getMessage()]);
@@ -69,7 +69,7 @@ class CommentController implements ControllerInterface
         }
 
         try {
-            $this->commentService->deleteComment($commentId);
+            $this->commentService->delete($commentId);
             $this->redirector->redirect('post', ['id' => $postId, 'success' => 'Commentaire supprimé avec succès']);
         } catch (\Exception $e) {
             $this->redirector->redirect('post', ['id' => $postId, 'error' => $e->getMessage()]);

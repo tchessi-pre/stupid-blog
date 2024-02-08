@@ -19,8 +19,8 @@ $connection = $db->getConnection();
 $categoryService = new CategoryService(new CategoryRepository($connection));
 $userService = new UserService(new UserRepository($connection));
 
-$category = $categoryService->getCategoryById($post->getCategoryId());
-$user = $userService->getUserById($post->getUserId());
+$category = $categoryService->getById($post->getCategoryId());
+$user = $userService->getById($post->getUserId());
 
 ?>
 

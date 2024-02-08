@@ -50,14 +50,18 @@ $services['commentService'] = function () use ($services) {
     return new CommentService($services['commentRepository']());
 };
 
+$userController = new UserController($services['userService'](), $services['viewRenderer'](), $services['redirector']());
+$postController = new PostController($services['postService'](), $services['viewRenderer'](), $services['redirector'](), $services['postRepository']());
+$commentController = new CommentController($services['commentService'](), $services['viewRenderer'](), $services['redirector']());
 
 $router = new Router($_SERVER['REQUEST_URI']);
-
 $router->setBasePath('/stupid-blog/');
 
 $router->get('/', function () use ($services) {
     $services['viewRenderer']()->render('index');
 }, "home");
+
+// Authentification 
 
 $router->get('/register', function () use ($services) {
     try {
@@ -67,9 +71,7 @@ $router->get('/register', function () use ($services) {
     }
 }, "register");
 
-$router->post('/register', function () use ($services) {
-    $userService = new UserService($services['userRepository']());
-    $userController = new UserController($userService, $services['viewRenderer'](), $services['redirector']());
+$router->post('/register', function () use ($userController) {
     $userController->registerUser($_POST);
 }, "register");
 
@@ -77,46 +79,49 @@ $router->get('/login', function () use ($services) {
     $services['viewRenderer']()->render('login');
 }, "login");
 
-$router->post('/login', function () use ($services) {
-    $userController = new UserController($services['userService'](), $services['viewRenderer'](), $services['redirector']());
+$router->post('/login', function () use ($userController) {
     $userController->loginUser($_POST);
 }, "login");
 
-$router->get('/logout', function () use ($services) {
-    $userController = new UserController($services['userService'](), $services['viewRenderer'](), $services['redirector']());
+$router->get('/logout', function () use ($userController) {
     $userController->logoutUser();
 }, "logout");
 
-$router->get('/profile', function () use ($services) {
-    $userController = new UserController($services['userService'](), $services['viewRenderer'](), $services['redirector']());
+// Profile
+
+$router->get('/profile', function () use ($userController) {
     $userController->profile();
 }, "profile");
 
-$router->post('/profile', function () use ($services) {
-    $userController = new UserController($services['userService'](), $services['viewRenderer'](), $services['redirector']());
-    $userId = $_SESSION['user']->getId();
+$router->post('/profile', function () use ($userController) {
+    // var_dump($_POST); die;
     $userController->update($_POST);
 
 }, "profile"); 
 
-$router->get('/posts/:page', function ($page = 1) use ($services) {
-    $postController = new PostController($services['postService'](), $services['viewRenderer'](), $services['redirector'](), $services['postRepository']());
+// Pagination 
+
+$router->get('/posts/:page', function ($page = 1) use ($postController) {
     $postController->paginatedPosts($page);
 }, "posts")->with('page', '[0-9]+');
 
-$router->get('/post/:id', function ($id) use ($services) {
-    $postController = new PostController($services['postService'](), $services['viewRenderer'](), $services['redirector'](), $services['postRepository']());
+// Affichage et création des postes 
+
+$router->get('/post/:id', function ($id) use ($postController) {
     $postController->viewPost($id);
 }, "post")->with('id', '[0-9]+');
 
-$router->post('/comments/:post_id', function ($post_id) use ($services) {
-    $commentController = new CommentController($services['commentService'](), $services['viewRenderer'](), $services['redirector']());
+// Créer un commentaire 
+
+$router->post('/comments/:post_id', function ($post_id) use ($commentController, $services) {
     try {
-        $commentController->create(['post_id' => $post_id, 'content' => $_POST['content']]);
+        $commentController->create($_POST);
     } catch (\Exception $e) {
         $services['redirector']()->redirect('post', ['id' => $post_id, 'error' => $e->getMessage()]);
     }
 }, "add_comment")->with('post_id', '[0-9]+');
+
+// Gestion administrateur 
 
 $router->get('/admin/:action/:entity', function ($action = 'list', $entity = 'user') use ($services) {
     $services['userService']()->admin($action, $entity);

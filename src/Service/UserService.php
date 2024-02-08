@@ -8,9 +8,10 @@ use App\Model\PostModel;
 use App\Model\CommentModel;
 use App\Controller\UserController;
 use App\Class\Redirector;
+use App\Interface\ServiceInterface;
 use App\View\ViewRenderer;
 
-class UserService
+class UserService implements ServiceInterface
 {
     private $userRepository;
 
@@ -19,48 +20,15 @@ class UserService
         $this->userRepository = $userRepository;
     }
 
-    public function deleteUser($userId) {
-        if (empty($userId)) {
-            throw new \Exception("ID d'utilisateur invalide");
-        }
+    
+    public function create($data) {
 
-        $user = $this->userRepository->findOneById($userId);
-        if (!$user) {
-            throw new \Exception("Utilisateur introuvable");
-        }
+        $email = $data['email'] ?? null;
+        $password = $data['password'] ?? null;
+        $confirmPassword = $data['confirmPassword'] ?? null;
+        $firstname = $data['firstname'] ?? null;
+        $lastname = $data['lastname'] ?? null;
 
-        $this->userRepository->delete($userId);
-    }
-
-    public function updateUser($userId, $email, $firstname, $lastname) {
-        
-        
-        if (empty($userId)) {
-           
-            throw new \Exception("ID d'utilisateur invalide");
-        }
-
-        $user = $this->userRepository->findOneById($userId);
-        if (!$user) {
-            var_dump('coucou'); die;
-            throw new \Exception("Utilisateur introuvable");
-        }
-
-        if (empty($email) || empty($firstname) || empty($lastname)) {
-            throw new \Exception("Tous les champs sont obligatoires");
-        }
-
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new \Exception("L'email n'est pas valide");
-        }
-        $user->setEmail($email);
-        $user->setFirstname($firstname);
-        $user->setLastname($lastname);
-
-        $this->userRepository->save($user);
-    }
-
-    public function createUser($email, $password, $confirmPassword, $firstname, $lastname) {
         if (empty($email) || empty($password) || empty($confirmPassword) || empty($firstname) || empty($lastname)) {
             throw new \Exception("Tous les champs sont obligatoires");
         }
@@ -87,11 +55,71 @@ class UserService
         $this->userRepository->save($user);
     }
 
+    public function update($user) {
+        
+        
+        // if (empty($userId)) {
+           
+        //     throw new \Exception("ID d'utilisateur invalide");
+        // }
+
+        // $user = $this->userRepository->findOneById($userId);
+        // if (!$user) {
+        //     var_dump('coucou'); die;
+        //     throw new \Exception("Utilisateur introuvable");
+        // }
+
+        // if (empty($email) || empty($firstname) || empty($lastname)) {
+        //     throw new \Exception("Tous les champs sont obligatoires");
+        // }
+
+        // if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        //     throw new \Exception("L'email n'est pas valide");
+        // }
+        // $user->setEmail($email);
+        // $user->setFirstname($firstname);
+        // $user->setLastname($lastname);
+
+        $this->userRepository->save($user);
+    }
+
+    public function delete($user) {
+        if (empty($userId)) {
+            throw new \Exception("ID d'utilisateur invalide");
+        }
+
+        $user = $this->userRepository->findOneById($userId);
+        if (!$user) {
+            throw new \Exception("Utilisateur introuvable");
+        }
+
+        $this->userRepository->delete($user->getId());
+    }
+
+    public function getById($id): ?UserModel {
+        return $this->userRepository->findOneById($id);
+    }
+
+    public function getAll()
+    {
+      return $this->userRepository->findAll();
+    }
+
+    public function toArray($user): array
+    {
+        return [
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'firstname' => $user->getFirstname(),
+            'lastname' => $user->getLastname(),
+            'role' => $user->getRole()
+        ];
+    }
+
+
+
     public function updateProfile(UserModel $user)
     {
-   
-      
-    
         $this->userRepository->save($user);
     }
     
@@ -160,10 +188,6 @@ class UserService
         $user->setLastname($lastname);
         $user->setRole(['ROLE_USER']);
         $this->userRepository->save($user);
-    }
-
-    public function getUserById($id): ?UserModel {
-        return $this->userRepository->getUserById($id);
     }
 
     public function addPost(PostModel $post): UserModel

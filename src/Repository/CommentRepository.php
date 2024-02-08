@@ -25,7 +25,7 @@ class CommentRepository implements RepositoryInterface
         }
     }
 
-    private function insert(CommentModel $comment)
+    public function insert($comment)
     {
         $stmt = $this->db->prepare("INSERT INTO comment (content, created_at, user_id, post_id) VALUES (:content, :created_at, :user_id, :post_id)");
         $stmt->execute([
@@ -37,7 +37,7 @@ class CommentRepository implements RepositoryInterface
         $comment->setId($this->db->lastInsertId());
     }
 
-    private function update(CommentModel $comment)
+    public function update($comment)
     {
         $stmt = $this->db->prepare("UPDATE comment SET content = :content, created_at = :created_at, user_id = :user_id, post_id = :post_id WHERE id = :id");
         $stmt->execute([
@@ -88,6 +88,13 @@ class CommentRepository implements RepositoryInterface
         return $comments;
     }
 
+    public function delete(int $commentId)
+    {
+        $stmt = $this->db->prepare('DELETE FROM comment WHERE id = :commentId');
+        $stmt->bindValue(':commentId', $commentId, \PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
     public function findByPost(int $postId): array
     {
         $stmt = $this->db->prepare('SELECT * FROM comment WHERE post_id = :postId');
@@ -124,10 +131,5 @@ class CommentRepository implements RepositoryInterface
         return $comments;
     }
 
-    public function delete(int $commentId)
-    {
-        $stmt = $this->db->prepare('DELETE FROM comment WHERE id = :commentId');
-        $stmt->bindValue(':commentId', $commentId, \PDO::PARAM_INT);
-        $stmt->execute();
-    }
+
 }

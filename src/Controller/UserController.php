@@ -20,6 +20,52 @@ class UserController implements ControllerInterface
         $this->redirector = $redirector;
     }
 
+    public function create($request) {
+        try {
+            $email = $request['email'] ?? '';
+            $password = $request['password'] ?? '';
+            $confirmPassword = $request['confirm_password'] ?? '';
+            $firstname = $request['firstname'] ?? '';
+            $lastname = $request['lastname'] ?? '';
+
+            $this->userService->create($email, $password, $confirmPassword, $firstname, $lastname);
+
+            $this->redirector->redirect('login');
+        } catch (\Exception $e) {
+            $this->redirector->redirect('register', ['error' => $e->getMessage()]);
+        }
+    }
+
+
+    public function update($request) {
+        try {
+            // var_dump($_SESSION['user']->getId()); die;
+            // $userId = $_SESSION['user']->getId();
+            // $email = $request['email'] ?? '';
+            // $firstname = $request['firstname'] ?? '';
+            // $lastname = $request['lastname'] ?? '';
+            // var_dump($request); die;
+            $this->userService->update($request);
+
+            $this->redirector->redirect('profile', ['success' => 'Profil mis à jour avec succès']);
+        } catch (\Exception $e) {
+            $this->redirector->redirect('profile', ['error' => $e->getMessage()]);
+        }
+    }
+
+    public function delete($request) {
+        try {
+            $userId = $request['user_id'] ?? null;
+            $this->userService->delete($userId);
+            $this->redirector->redirect('home', ['success' => 'Utilisateur supprimé avec succès']);
+        } catch (\Exception $e) {
+            $this->redirector->redirect('profile', ['error' => $e->getMessage()]);
+        }
+    }
+
+
+    // Authentification 
+
     public function registerUser($data)
     {
         try {
@@ -45,6 +91,7 @@ class UserController implements ControllerInterface
         $this->redirector->redirect('home');
     }
 
+    
     public static function getUser()
     {
         if (isset($_SESSION['user'])) {
@@ -61,7 +108,7 @@ class UserController implements ControllerInterface
         }
 
         $userId = $_SESSION['user']->getId(); 
-        $user = $this->userService->getUserById($userId);
+        $user = $this->userService->getById($userId);
         
         if ($user) {
             $this->viewRenderer->render('profile', ['user' => $user]);
@@ -91,46 +138,4 @@ class UserController implements ControllerInterface
 // }
 
 
-    public function create($request) {
-        try {
-            $email = $request['email'] ?? '';
-            $password = $request['password'] ?? '';
-            $confirmPassword = $request['confirm_password'] ?? '';
-            $firstname = $request['firstname'] ?? '';
-            $lastname = $request['lastname'] ?? '';
-
-            $this->userService->createUser($email, $password, $confirmPassword, $firstname, $lastname);
-
-            $this->redirector->redirect('login');
-        } catch (\Exception $e) {
-            $this->redirector->redirect('register', ['error' => $e->getMessage()]);
-        }
-    }
-
-
-    public function update($request) {
-        try {
-            // var_dump($_SESSION['user']->getId()); die;
-            $userId = $_SESSION['user']->getId();
-            $email = $request['email'] ?? '';
-            $firstname = $request['firstname'] ?? '';
-            $lastname = $request['lastname'] ?? '';
-            // var_dump($request); die;
-            $this->userService->updateUser($userId, $email, $firstname, $lastname);
-
-            $this->redirector->redirect('profile', ['success' => 'Profil mis à jour avec succès']);
-        } catch (\Exception $e) {
-            $this->redirector->redirect('profile', ['error' => $e->getMessage()]);
-        }
-    }
-
-    public function delete($request) {
-        try {
-            $userId = $request['user_id'] ?? null;
-            $this->userService->deleteUser($userId);
-            $this->redirector->redirect('home', ['success' => 'Utilisateur supprimé avec succès']);
-        } catch (\Exception $e) {
-            $this->redirector->redirect('profile', ['error' => $e->getMessage()]);
-        }
-    }
 }

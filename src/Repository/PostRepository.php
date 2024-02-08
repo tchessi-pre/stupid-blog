@@ -17,9 +17,8 @@ class PostRepository implements RepositoryInterface
     $this->db = $db;
   }
 
-  public function save($model)
+  public function save($post)
   {
-    $post = $model;
     if (empty($post->getId())) {
       $this->insert($post);
     } else {
@@ -27,7 +26,7 @@ class PostRepository implements RepositoryInterface
     }
   }
 
-  public function insert(PostModel $post)
+  public function insert($post)
   {
     $stmt = $this->db->prepare('INSERT INTO post (title, content, user_id, category_id, created_at) VALUES (:title, :content, :user_id, :category_id, NOW())');
     $stmt->bindValue(':title', $post->getTitle(), \PDO::PARAM_STR);
@@ -38,7 +37,7 @@ class PostRepository implements RepositoryInterface
     $post->setId($this->db->lastInsertId());
   }
 
-  public function update(PostModel $post)
+  public function update($post)
   {
     $stmt = $this->db->prepare('UPDATE post SET title = :title, content = :content, user_id = :user_id, category_id = :category_id, updated_at = NOW() WHERE id = :id');
     $stmt->bindValue(':id', $post->getId(), \PDO::PARAM_INT);
@@ -47,27 +46,6 @@ class PostRepository implements RepositoryInterface
     $stmt->bindValue(':user_id', $post->getUserId(), \PDO::PARAM_INT);
     $stmt->bindValue(':category_id', $post->getCategoryId(), \PDO::PARAM_INT);
     $stmt->execute();
-  }
-
-  public function delete(int $postId)
-  {
-    $stmt = $this->db->prepare('DELETE FROM post WHERE id = :id');
-    $stmt->bindValue(':id', $postId, \PDO::PARAM_INT);
-    $stmt->execute();
-  }
-
-  public function toArray(PostModel $post): array
-  {
-    return [
-      'id' => $post->getId(),
-      'title' => $post->getTitle(),
-      'content' => $post->getContent(),
-      'created_at' => $post->getCreatedAt()->format('Y-m-d H:i:s'),
-      'updated_at' => $post->getUpdatedAt() ? $post->getUpdatedAt()->format('Y-m-d H:i:s') : null,
-      'user' => 'Placeholder for user', // $post->getUser()->getEmail(),
-      'comments' => array_map(fn ($comment) => $comment->getId(), $post->getComments()),
-      'category' => 'Placeholder for category' // $post->getCategory()->getName()
-    ];
   }
 
   public function findOneById(int $id): ?PostModel
@@ -115,6 +93,13 @@ class PostRepository implements RepositoryInterface
       $results[] = $post;
     }
     return $results;
+  }
+
+  public function delete(int $postId)
+  {
+    $stmt = $this->db->prepare('DELETE FROM post WHERE id = :id');
+    $stmt->bindValue(':id', $postId, \PDO::PARAM_INT);
+    $stmt->execute();
   }
 
   public function findByUser($user): array

@@ -2,10 +2,11 @@
 
 namespace App\Service;
 
+use App\Interface\ServiceInterface;
 use App\Repository\CategoryRepository;
 use App\Model\CategoryModel;
 
-class CategoryService
+class CategoryService implements ServiceInterface
 {
   private CategoryRepository $categoryRepository;
 
@@ -14,35 +15,37 @@ class CategoryService
     $this->categoryRepository = $categoryRepository;
   }
 
-  public function createCategory(string $name): CategoryModel
+  public function create($data): CategoryModel
   {
+    $name = $data['name'] ?? null;
+    
     $category = new CategoryModel();
     $category->setName($name);
     $this->categoryRepository->save($category);
     return $category;
   }
 
-  public function updateCategory(CategoryModel $category): void
+  public function update($category): void
   {
     $this->categoryRepository->save($category);
   }
 
-  public function deleteCategory(CategoryModel $category): void
+  public function delete($category): void
   {
     $this->categoryRepository->delete($category->getId());
   }
 
-  public function getCategoryById(int $id): ?CategoryModel
+  public function getById($id): ?CategoryModel
   {
     return $this->categoryRepository->findOneById($id);
   }
 
-  public function getAllCategories(): array
+  public function getAll(): array
   {
     return $this->categoryRepository->findAll();
   }
 
-  public function categoryToArray(CategoryModel $category): array
+  public function toArray($category): array
   {
     return [
       'id' => $category->getId(),

@@ -30,7 +30,7 @@ class CategoryController implements ControllerInterface
     }
 
     try {
-      $this->categoryService->createCategory($name);
+      $this->categoryService->create($name);
       $this->redirector->redirect('category', ['success' => 'Category created successfully']);
     } catch (\Exception $e) {
       $this->redirector->redirect('category', ['error' => $e->getMessage()]);
@@ -48,14 +48,14 @@ class CategoryController implements ControllerInterface
     }
 
     try {
-      $category = $this->categoryService->getCategoryById($categoryId);
+      $category = $this->categoryService->getById($categoryId);
       if (!$category) {
         $this->redirector->redirect('category', ['error' => 'Category not found']);
         return;
       }
 
       $category->setName($name);
-      $this->categoryService->updateCategory($category);
+      $this->categoryService->update($category);
       $this->redirector->redirect('category', ['success' => 'Category updated successfully']);
     } catch (\Exception $e) {
       $this->redirector->redirect('category', ['error' => $e->getMessage()]);
@@ -72,13 +72,13 @@ class CategoryController implements ControllerInterface
     }
 
     try {
-      $category = $this->categoryService->getCategoryById($categoryId);
+      $category = $this->categoryService->getById($categoryId);
       if (!$category) {
         $this->redirector->redirect('category', ['error' => 'Category not found']);
         return;
       }
 
-      $this->categoryService->deleteCategory($category);
+      $this->categoryService->delete($category);
       $this->redirector->redirect('category', ['success' => 'Category deleted successfully']);
     } catch (\Exception $e) {
       $this->redirector->redirect('category', ['error' => $e->getMessage()]);

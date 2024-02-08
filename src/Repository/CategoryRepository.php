@@ -15,13 +15,49 @@ class CategoryRepository implements RepositoryInterface
     $this->db = $db;
   }
 
-  public function save($model)
-  {
-    $stmt = $this->db->prepare("INSERT INTO category (name) VALUES (:name)");
-    $stmt->execute([
-      'name' => $model->getName(),
-    ]);
-  }
+/**
+     * Save Post in database
+     *
+     * @return self
+     */
+    public function save($category)
+    {
+        if (empty($category->getId())) {
+            $this->insert($category);
+        } else {
+            $this->update($category);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Insert post in database
+     *
+     * @return self
+     */
+    public function insert($category)
+    {
+      $stmt = $this->db->prepare('INSERT INTO category (name) VALUES (:name)');
+      $stmt->execute([
+            'name' => $category->getName()
+        ]);
+        $category->setId($this->db->lastInsertId());
+    }
+
+    /**
+     * Udpdate post in database
+     *
+     * @return self
+     */
+    public function update($category)
+    {
+      $stmt = $this->db->prepare('UPDATE category SET name = :name WHERE id = :id');
+      $stmt->execute([
+            'name' => $category->getName(),
+            'id' => $category->getId()
+        ]);
+    }
 
   public function findOneById(int $id)
   {
