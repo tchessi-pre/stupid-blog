@@ -22,7 +22,7 @@ class CommentController implements ControllerInterface
 
     public function create($request)
     {
-
+        // var_dump($request);die;
         $postId = $request['post_id'] ?? null;
         $content = $request['content'] ?? '';
 

@@ -115,6 +115,7 @@ $router->get('/post/:id', function ($id) use ($postController) {
 
 $router->post('/comments/:post_id', function ($post_id) use ($commentController, $services) {
     try {
+        $_POST['post_id'] = $post_id;
         $commentController->create($_POST);
     } catch (\Exception $e) {
         $services['redirector']()->redirect('post', ['id' => $post_id, 'error' => $e->getMessage()]);
