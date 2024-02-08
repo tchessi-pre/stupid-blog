@@ -40,20 +40,17 @@ class UserRepository implements RepositoryInterface
     public function update($user)
     {
         $stmt = $this->db->prepare('UPDATE user SET email = :email, firstname = :firstname, lastname = :lastname WHERE id = :id');
-        // $stmt->bindValue(':id', $_SESSION['user']->getId(), \PDO::PARAM_INT);
-        // $stmt->bindValue(':email', $user['email'], \PDO::PARAM_STR);
-        // $stmt->bindValue(':firstname', $user['firstname'], \PDO::PARAM_STR);
-        // $stmt->bindValue(':lastname', $user['lastname'], \PDO::PARAM_STR);
-        // var_dump($stmt);die;
 
-        // $stmt->execute();
-        // var_dump($user['email']);die;
         $stmt->execute([
             'id' => $_SESSION['user']->getId(),
             'email' => $user['email'],
             'firstname' => $user['firstname'],
             'lastname' => $user['lastname'],
         ]);
+        
+         $_SESSION["user"]->setEmail($user['email']);
+         $_SESSION["user"]->setFirstName($user['firstname']);
+         $_SESSION["user"]->setLastName($user['lastname']);
         
     }
 
