@@ -91,9 +91,7 @@ class UserModel
 
     public function getPosts(): array
     {
-        // Assurez-vous que les posts sont récupérés uniquement s'ils ne sont pas déjà chargés
         if (empty($this->posts)) {
-            // Logique pour récupérer les posts de l'utilisateur depuis la base de données
             $db = new Database();
             $connection = $db->getConnection();
             $postRepository = new PostRepository($connection);
@@ -104,7 +102,6 @@ class UserModel
 
     public function setPosts(array $posts): self
     {
-        // Définissez les posts et assurez-vous de mettre à jour les IDs des posts
         $this->posts = $posts;
         foreach ($posts as $post) {
             $post->setUserId($this->getId());
@@ -114,9 +111,7 @@ class UserModel
 
     public function getComments(): array
     {
-        // Assurez-vous que les commentaires sont récupérés uniquement s'ils ne sont pas déjà chargés
         if (empty($this->comments)) {
-            // Logique pour récupérer les commentaires de l'utilisateur depuis la base de données
             $db = new Database();
             $connection = $db->getConnection();
             $commentRepository = new CommentRepository($connection);
@@ -127,7 +122,6 @@ class UserModel
 
     public function setComments(array $comments): self
     {
-        // Définissez les commentaires et assurez-vous de mettre à jour les IDs des commentaires
         $this->comments = $comments;
         foreach ($comments as $comment) {
             $comment->setUserId($this->getId());

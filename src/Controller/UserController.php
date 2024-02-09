@@ -39,12 +39,6 @@ class UserController implements ControllerInterface
 
     public function update($request) {
         try {
-            // var_dump($_SESSION['user']->getId()); die;
-            // $userId = $_SESSION['user']->getId();
-            // $email = $request['email'] ?? '';
-            // $firstname = $request['firstname'] ?? '';
-            // $lastname = $request['lastname'] ?? '';
-            // var_dump($request); die;
             $this->userService->update($request);
 
             $this->redirector->redirect('profile', ['success' => 'Profil mis à jour avec succès']);
@@ -116,26 +110,5 @@ class UserController implements ControllerInterface
             $this->redirector->redirect('login');
         }
     }
-
-//     public function updateProfile($data)
-// {
-//      $user = $data;
-
-//         if (!$user) {
-//             throw new \Exception("User not found");
-//         }
-    
-//         if (isset($data['email'])) {
-//             $user->setEmail($data['email']);
-//         }
-//         if (isset($data['firstName'])) {
-//             $user->setFirstName($data['firstName']);
-//         }
-//         if (isset($data['lastName'])) {
-//             $user->setLastName($data['lastName']);
-//         }
-
-// }
-
 
 }

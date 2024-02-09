@@ -56,29 +56,6 @@ class UserService implements ServiceInterface
     }
 
     public function update($user) {
-        
-        
-        // if (empty($userId)) {
-           
-        //     throw new \Exception("ID d'utilisateur invalide");
-        // }
-
-        // $user = $this->userRepository->findOneById($userId);
-        // if (!$user) {
-        //     var_dump('coucou'); die;
-        //     throw new \Exception("Utilisateur introuvable");
-        // }
-
-        // if (empty($email) || empty($firstname) || empty($lastname)) {
-        //     throw new \Exception("Tous les champs sont obligatoires");
-        // }
-
-        // if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        //     throw new \Exception("L'email n'est pas valide");
-        // }
-        // $user->setEmail($email);
-        // $user->setFirstname($firstname);
-        // $user->setLastname($lastname);
 
         $this->userRepository->save($user);
     }

@@ -21,7 +21,6 @@ class UserRepository implements RepositoryInterface
         if (empty($_SESSION)) {
             $this->insert($user);
         } else {
-            // var_dump('couocu'); die;
             $this->update($user);
         }
     }
