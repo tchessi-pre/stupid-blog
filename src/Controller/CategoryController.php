@@ -5,30 +5,32 @@ namespace App\Controller;
 use App\Service\CategoryService;
 use App\View\ViewRenderer;
 use App\Class\Redirector;
-use App\Interface\ControllerInterface;
+use App\ErrorHandler\CategoryError\ErrorHandlerInterface;
 
-class CategoryController implements ControllerInterface
+class CategoryController
 {
   private CategoryService $categoryService;
   private ViewRenderer $viewRenderer;
   private Redirector $redirector;
+  private ErrorHandlerInterface $errorHandler;
 
-  public function __construct(CategoryService $categoryService, ViewRenderer $viewRenderer, Redirector $redirector)
+  public function __construct(CategoryService $categoryService, ViewRenderer $viewRenderer, Redirector $redirector, ErrorHandlerInterface $errorHandler)
   {
     $this->categoryService = $categoryService;
     $this->viewRenderer = $viewRenderer;
     $this->redirector = $redirector;
+    $this->errorHandler = $errorHandler;
   }
 
   public function create($request)
   {
-    $name = $request['name'] ?? '';
-
-    if (empty($name)) {
-      $this->redirector->redirect('category', ['error' => 'Category name cannot be empty']);
+    $error = $this->errorHandler->handleError($request);
+    if ($error) {
+      $this->redirector->redirect('category', ['error' => $error]);
       return;
     }
 
+    $name = $request['name'];
     try {
       $this->categoryService->create($name);
       $this->redirector->redirect('category', ['success' => 'Category created successfully']);
@@ -39,13 +41,14 @@ class CategoryController implements ControllerInterface
 
   public function update($request)
   {
-    $categoryId = $request['id'] ?? null;
-    $name = $request['name'] ?? '';
-
-    if (is_null($categoryId) || empty($name)) {
-      $this->redirector->redirect('category', ['error' => 'Invalid category data']);
+    $error = $this->errorHandler->handleError($request);
+    if ($error) {
+      $this->redirector->redirect('category', ['error' => $error]);
       return;
     }
+
+    $categoryId = $request['id'] ?? null;
+    $name = $request['name'] ?? '';
 
     try {
       $category = $this->categoryService->getById($categoryId);
@@ -64,12 +67,16 @@ class CategoryController implements ControllerInterface
 
   public function delete($request)
   {
-    $categoryId = $request['id'] ?? null;
-
-    if (is_null($categoryId)) {
-      $this->redirector->redirect('category', ['error' => 'Invalid category ID']);
+    // Utilisation du gestionnaire d'erreurs pour gérer les erreurs de redirection
+    $error = $this->errorHandler->handleError($request);
+    if ($error) {
+      // Si une erreur de redirection est détectée, la redirection est déjà effectuée dans le gestionnaire d'erreurs
       return;
     }
+
+    // Si aucune erreur de redirection n'est détectée, l'exécution continue normalement
+    // Gestion des autres erreurs de manière similaire à ce que vous avez déjà implémenté
+    $categoryId = $request['id'] ?? null;
 
     try {
       $category = $this->categoryService->getById($categoryId);
@@ -84,4 +91,5 @@ class CategoryController implements ControllerInterface
       $this->redirector->redirect('category', ['error' => $e->getMessage()]);
     }
   }
+
 }
